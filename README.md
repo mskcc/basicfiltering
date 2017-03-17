@@ -4,7 +4,7 @@ Basic Filtering for:
 1. Variant Allele Frequency = 1% (default)
 2. Variant Reads = 5 (default)
 3. Tumor-Normal Variant Allele Frequency Ratio >= 5  (default)
-4. If vcf of hotspot location are given it skips positions that have hotspots regardless of not satisfying 3 of the above criteria
+4. If vcf of hotspot location are given it skips positions that have hotspots regardless of not satisfying number `3` from the above criteria
 
 for Multiple Tools
 
