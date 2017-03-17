@@ -9,8 +9,8 @@ Basic Filtering for:
 for Multiple Tools
 
 ## Requirements:
-pyvcf : [v0.6.8](http://pyvcf.readthedocs.io/en/latest/INTRO.html)
-pandas : [v0.16.2](http://pandas.pydata.org/)
+- pyvcf : [v0.6.8](http://pyvcf.readthedocs.io/en/latest/INTRO.html)
+- pandas : [v0.16.2](http://pandas.pydata.org/)
 
 ### Works with following versions output formats:
 
