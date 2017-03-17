@@ -25,7 +25,7 @@ Filter Indels from the output of SomaticIndelDetector
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --verbose         make lots of noise [default]
+  -v, --verbose         make lots of noise
   -ivcf SomeID.vcf, -inputVcf SomeID.vcf
                         Input SomaticIndelDetector vcf file which needs to be
                         filtered
@@ -60,7 +60,7 @@ Filter SNPS from the output of muTect v1.14
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --verbose         make lots of noise [default]
+  -v, --verbose         make lots of noise
   -ivcf SomeID.vcf, -inputVcf SomeID.vcf
                         Input vcf muTect file which needs to be filtered
   -itxt SomeID.txt, -inputTxt SomeID.txt
@@ -93,7 +93,7 @@ Filter Indels from the output of vardict
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --verbose         make lots of noise [default]
+  -v, --verbose         make lots of noise
   -i SomeID.vcf, -inputVcf SomeID.vcf
                         Input vcf vardict file which needs to be filtered
   -tsn SomeName, --tsampleName SomeName
@@ -122,7 +122,7 @@ Filter Indels from the output of pindel
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --verbose         make lots of noise [default]
+  -v, --verbose         make lots of noise
   -i SomeID.vcf, -inputVcf SomeID.vcf
                         Input vcf freebayes file which needs to be filtered
   -tsn SomeName, --tsampleName SomeName
