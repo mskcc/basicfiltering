@@ -1,7 +1,7 @@
 '''
-@Description : This tool helps to filter SomaticIndelDetector vcf and txt through command line.
+@Description : This tool helps to filter SomaticIndelDetector vcf and txt through command line.GATK version: 2.3-9
 @Created :  07/25/2016
-@Updated: 03/17/2016
+@Updated : 03/17/2017
 @author : Ronak H Shah
 
 '''
@@ -32,15 +32,14 @@ except ImportError:
 def main():
     parser = argparse.ArgumentParser(
         prog='filter_sid.py',
-        description='Filter Indels from the output of SomaticIndelDetector',
+        description='Filter indels from the output of SomaticIndelDetector in GATK v2.3-9',
         usage='%(prog)s [options]')
     parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         dest="verbose",
-        default=True,
-        help="make lots of noise [default]")
+        help="make lots of noise")
     parser.add_argument(
         "-ivcf",
         "-inputVcf",
@@ -122,7 +121,7 @@ def main():
         "--outDir",
         action="store",
         dest="outdir",
-        required=True,
+        required=False,
         type=str,
         metavar='/somepath/output',
         help="Full Path to the output dir.")
@@ -134,14 +133,17 @@ def main():
     if(args.verbose):
         logger.info("Finished the run for doing standard filter.")
 
-
 # Code that does Standard Filter
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]
     txt_out = vcf_out
-    vcf_out = vcf_out + "_STDfilter.vcf"
-    txt_out = txt_out + "_STDfilter.txt"
+    if(args.outdir):
+        vcf_out = os.path.join(args.outdir,vcf_out + "_STDfilter.vcf")
+        txt_out = os.path.join(args.outdir,txt_out + "_STDfilter.vcf")
+    else:
+        vcf_out = vcf_out + "_STDfilter.vcf"
+        txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txt_fh = open(txt_out, "wb")
@@ -235,5 +237,6 @@ if __name__ == "__main__":
     start_time = time.time()
     main()
     end_time = time.time()
-    logger.info("Elapsed time was %g seconds" % (end_time - start_time))
+    totaltime = end_time - start_time
+    logging.info("get_flanking_sequence: Elapsed time was %g seconds", totaltime)
     sys.exit(0)

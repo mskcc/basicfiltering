@@ -1,6 +1,7 @@
 '''
-@Description : This tool helps to filter vardict vcf through command line.
+@Description : This tool helps to filter vardict vcf through command line for version 1.4.6
 @Created :  04/22/2016
+@Updated : 03/17/2017
 @author : Ronak H Shah
 
 '''
@@ -10,27 +11,43 @@ import sys
 import os
 import time
 import os.path
-import vcf
+import logging
 
+logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S %p',
+        level=logging.DEBUG)
+logger = logging.getLogger('filter_vardict')
+try:
+    import coloredlogs
+    coloredlogs.install(level='DEBUG')
+except ImportError:
+    logger.warning("filter_vardict: coloredlogs is not installed, please install it if you wish to see color in logs on standard out.")
+    pass
+try:
+    import vcf
+except ImportError:
+    logger.fatal("filter_vardict: pyvcf is not installed, please install pyvcf as it is required to run the mapping.")
+    sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser(
         prog='filter_vardict.py',
-        description='Filter Indels from the output of vardict',
+        description='Filter snps/indels from the output of vardict v1.4.6',
         usage='%(prog)s [options]')
     parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         dest="verbose",
-        default=True,
-        help="make lots of noise [default]")
+        help="make lots of noise")
     parser.add_argument(
         "-i",
         "-inputVcf",
         action="store",
         dest="inputVcf",
         required=True,
+        type=file,
         metavar='SomeID.vcf',
         help="Input vcf vardict file which needs to be filtered")
     parser.add_argument(
@@ -39,6 +56,7 @@ def main():
         action="store",
         dest="tsampleName",
         required=True,
+        type=str,
         metavar='SomeName',
         help="Name of the tumor Sample")
     parser.add_argument(
@@ -47,6 +65,7 @@ def main():
         action="store",
         dest="dp",
         required=False,
+        type=int,
         default=0,
         metavar='0',
         help="Tumor total depth threshold")
@@ -56,6 +75,7 @@ def main():
         action="store",
         dest="ad",
         required=False,
+        type=int,
         default=5,
         metavar='5',
         help="Tumor allele depth threshold")
@@ -65,6 +85,7 @@ def main():
         action="store",
         dest="tnr",
         required=False,
+        type=int,
         default=5,
         metavar='5',
         help="Tumor-Normal variant frequency ratio threshold ")
@@ -74,6 +95,7 @@ def main():
         action="store",
         dest="vf",
         required=False,
+        type=float,
         default=0.01,
         metavar='0.01',
         help="Tumor variant frequency threshold ")
@@ -82,7 +104,8 @@ def main():
         "--hotspotVcf",
         action="store",
         dest="hotspotVcf",
-        required=True,
+        required=False,
+        type=file,
         metavar='hostpot.vcf',
         help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
     parser.add_argument(
@@ -90,25 +113,29 @@ def main():
         "--outDir",
         action="store",
         dest="outdir",
-        required=True,
+        required=False,
+        type=str,
         metavar='/somepath/output',
         help="Full Path to the output dir.")
 
     args = parser.parse_args()
     if(args.verbose):
-        print "I have Started the run for doing standard filter."
+        logger.info("Started the run for doing standard filter.")
     (stdfilterVCF) = RunStdFilter(args)
     if(args.verbose):
-        print "I have finished the run for doing standard filter."
+        logger.info("Finished the run for doing standard filter.")
+        
 # Code that does Standard Filter
-
-
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]
     txt_out = vcf_out
-    vcf_out = vcf_out + "_STDfilter.vcf"
-    txt_out = txt_out + "_STDfilter.txt"
+    if(args.outdir):
+        vcf_out = os.path.join(args.outdir,vcf_out + "_STDfilter.vcf")
+        txt_out = os.path.join(args.outdir,txt_out + "_STDfilter.vcf")
+    else:
+        vcf_out = vcf_out + "_STDfilter.vcf"
+        txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txt_fh = open(txt_out, "wb")
@@ -151,7 +178,10 @@ def RunStdFilter(args):
             # print "Ndata: ",trd,tad
 
             nvfRF = int(args.tnr) * nvf
-        hotspotFlag = checkHotspot(args.hotspotVcf, record.CHROM, record.POS)
+        if(args.hotspotVcf):
+            hotspotFlag = checkHotspot(args.hotspotVcf, record.CHROM, record.POS)
+        else:
+            hotspotFlag = False
         if(tvf > nvfRF):
             if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                 vcf_writer.write_record(record)
@@ -186,7 +216,7 @@ def checkHotspot(hotspotVcf, chromosome, start):
     try:
         record = hotspot_vcf_reader.fetch(str(chromosome), start)
     except ValueError:
-        print ("Region not present in vcf, ", str(chromosome), ":", start)
+        logger.info("Region not present in vcf, %s:%s", str(chromosome), start)
         record = None
 
     if(record is None):
@@ -199,4 +229,6 @@ if __name__ == "__main__":
     start_time = time.time()
     main()
     end_time = time.time()
-    print("Elapsed time was %g seconds" % (end_time - start_time))
+    totaltime = end_time - start_time
+    logging.info("get_flanking_sequence: Elapsed time was %g seconds", totaltime)
+    sys.exit(0)
