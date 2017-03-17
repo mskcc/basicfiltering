@@ -1,13 +1,17 @@
 # basicfiltering
 Basic Filtering for: 
 
-1. 1% Variant Allele Frequency and 
-2. 3 Variant Reads and 
-3. Tumor-Normal Variant Allele Frequency Ratio to be greater then 5 times 
+1. Variant Allele Frequency = 1% (default)
+2. Variant Reads = 5 (default)
+3. Tumor-Normal Variant Allele Frequency Ratio >= 5  (default)
+4. Skips positions that have hotspots regardless of not satisfying any of the above criteria
 
 for Multiple Tools
 
-## Works with following versions output formats:
+## Requirements:
+pyvcf : [v0.6.8](http://pyvcf.readthedocs.io/en/latest/INTRO.html)
+
+### Works with following versions output formats:
 
 #### SomaticIndelDetector (filter\_sid.py)
 - [SomaticIndelDetector in GATK  version](https://software.broadinstitute.org/gatk/download/) = 2.3-9
