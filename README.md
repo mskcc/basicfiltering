@@ -12,6 +12,11 @@ for Multiple Tools
 - pyvcf : [v0.6.8](http://pyvcf.readthedocs.io/en/latest/INTRO.html)
 - pandas : [v0.16.2](http://pandas.pydata.org/)
 
+## Auto CWL post-process requirements
+- Convert inputVcf to have both string and file as input type
+- Convert inputTxt to have both string and file as input type
+- Convert hotspotVcf to have both string and file as input type
+
 ### Works with following versions output formats:
 
 #### SomaticIndelDetector (filter\_sid.py)
