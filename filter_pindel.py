@@ -49,11 +49,11 @@ def main():
         help="make lots of noise")
     parser.add_argument(
         "-i",
-        "-inputVcf",
+        "--inputVcf",
         action="store",
         dest="inputVcf",
         required=True,
-        type=file,
+        type=argparse.FileType(),
         metavar='SomeID.vcf',
         help="Input vcf freebayes file which needs to be filtered")
     parser.add_argument(
@@ -138,7 +138,7 @@ def main():
         action="store",
         dest="hotspotVcf",
         required=False,
-        type=file,
+        type=argparse.FileType(),
         metavar='hostpot.vcf',
         help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
 

@@ -38,14 +38,14 @@ except ImportError:
 def main():
    parser = argparse.ArgumentParser(prog='filter_mutect.py', description='Filter snps from the output of muTect v1.14', usage='%(prog)s [options]')
    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", help="make lots of noise")
-   parser.add_argument("-ivcf", "-inputVcf", action="store", dest="inputVcf", required=True, type=file, metavar='SomeID.vcf', help="Input vcf muTect file which needs to be filtered")
-   parser.add_argument("-itxt", "-inputTxt", action="store", dest="inputTxt", required=True, type=file, metavar='SomeID.txt', help="Input txt muTect file which needs to be filtered")
+   parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=argparse.FileType(), metavar='SomeID.vcf', help="Input vcf muTect file which needs to be filtered")
+   parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=argparse.FileType(), metavar='SomeID.txt', help="Input txt muTect file which needs to be filtered")
    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str,metavar='SomeName', help="Name of the tumor Sample")
    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0', help="Tumor total depth threshold")
    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5', help="Tumor allele depth threshold")
    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5', help="Tumor-Normal variant frequency ratio threshold ")
    parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01', help="Tumor variant frequency threshold ")
-   parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=file, metavar='hostpot.vcf', help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
+   parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=argparse.FileType(), metavar='hostpot.vcf', help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
    parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output', help="Full Path to the output dir.")
    
    args = parser.parse_args()

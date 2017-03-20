@@ -42,20 +42,20 @@ def main():
         help="make lots of noise")
     parser.add_argument(
         "-ivcf",
-        "-inputVcf",
+        "--inputVcf",
         action="store",
         dest="inputVcf",
         required=True,
-        type=file, 
+        type=argparse.FileType(), 
         metavar='SomeID.vcf',
         help="Input SomaticIndelDetector vcf file which needs to be filtered")
     parser.add_argument(
         "-itxt",
-        "-inputTxt",
+        "--inputTxt",
         action="store",
         dest="inputTxt",
         required=True,
-        type=file,
+        type=argparse.FileType(),
         metavar='SomeID.txt',
         help="Input SomaticIndelDetector txt file which needs to be filtered")
     parser.add_argument(
@@ -113,7 +113,7 @@ def main():
         action="store",
         dest="hotspotVcf",
         required=False,
-        type=file,
+        type=argparse.FileType(),
         metavar='hostpot.vcf',
         help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
     parser.add_argument(
