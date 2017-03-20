@@ -46,7 +46,7 @@ def main():
         action="store",
         dest="inputVcf",
         required=True,
-        type=argparse.FileType(), 
+        type=str, 
         metavar='SomeID.vcf',
         help="Input SomaticIndelDetector vcf file which needs to be filtered")
     parser.add_argument(
@@ -55,7 +55,7 @@ def main():
         action="store",
         dest="inputTxt",
         required=True,
-        type=argparse.FileType(),
+        type=str,
         metavar='SomeID.txt',
         help="Input SomaticIndelDetector txt file which needs to be filtered")
     parser.add_argument(
@@ -113,7 +113,7 @@ def main():
         action="store",
         dest="hotspotVcf",
         required=False,
-        type=argparse.FileType(),
+        type=str,
         metavar='hostpot.vcf',
         help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
     parser.add_argument(
@@ -140,7 +140,7 @@ def RunStdFilter(args):
     txt_out = vcf_out
     if(args.outdir):
         vcf_out = os.path.join(args.outdir,vcf_out + "_STDfilter.vcf")
-        txt_out = os.path.join(args.outdir,txt_out + "_STDfilter.vcf")
+        txt_out = os.path.join(args.outdir,txt_out + "_STDfilter.txt")
     else:
         vcf_out = vcf_out + "_STDfilter.vcf"
         txt_out = txt_out + "_STDfilter.txt"
@@ -224,7 +224,7 @@ def checkHotspot(hotspotVcf, chromosome, start):
     try:
         record = hotspot_vcf_reader.fetch(str(chromosome), start)
     except ValueError:
-        logger.info("Region not present in vcf, %s:%s", str(chromosome), start)
+        logger.info("filter_sid: Region not present in vcf, %s:%s", str(chromosome), start)
         record = None
 
     if(record is None):
@@ -238,5 +238,5 @@ if __name__ == "__main__":
     main()
     end_time = time.time()
     totaltime = end_time - start_time
-    logging.info("get_flanking_sequence: Elapsed time was %g seconds", totaltime)
+    logging.info("filter_sid: Elapsed time was %g seconds", totaltime)
     sys.exit(0)
