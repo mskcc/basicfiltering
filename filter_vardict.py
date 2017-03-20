@@ -42,7 +42,7 @@ def main():
         dest="verbose",
         help="make lots of noise")
     parser.add_argument(
-        "-i",
+        "-ivcf",
         "--inputVcf",
         action="store",
         dest="inputVcf",
