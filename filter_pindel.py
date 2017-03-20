@@ -17,6 +17,7 @@ import shutil
 from datetime import date
 import copy
 import logging
+from scipy.weave.converters import default
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -120,18 +121,20 @@ def main():
         action="store",
         dest="min",
         required=False,
+        default=25,
         type=int,
         metavar='25',
-        help="Minimum length of the Indels")
+        help="Minimum length of the indels")
     parser.add_argument(
         "-max",
         "--max_var_len",
         action="store",
         dest="max",
         required=False,
+        default=2000,
         type=int,
         metavar='500',
-        help="Max length of the Indels")
+        help="Max length of the indels")
     parser.add_argument(
         "-hvcf",
         "--hotspotVcf",
