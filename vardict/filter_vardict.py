@@ -10,7 +10,6 @@ import argparse
 import sys
 import os
 import time
-import os.path
 import logging
 
 logging.basicConfig(

@@ -9,15 +9,8 @@ from __future__ import division
 import argparse
 import sys
 import time
-import os.path
-import stat
-from subprocess import Popen
-import shlex
-import shutil
-from datetime import date
-import copy
+import os
 import logging
-from scipy.weave.converters import default
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -234,21 +227,6 @@ def RunStdFilter(args):
 
     txt_fh.close()
     return(vcf_out)
-
-
-def list_duplicates_of(seq, item):
-    start_at = -1
-    locs = []
-    while True:
-        try:
-            loc = seq.index(item, start_at + 1)
-        except ValueError:
-            break
-        else:
-            locs.append(loc)
-            start_at = loc
-    return locs
-
 
 def checkHotspot(hotspotVcf, chromosome, start):
     hotspotFlag = False
