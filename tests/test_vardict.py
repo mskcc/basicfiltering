@@ -51,8 +51,8 @@ def main():
     outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
-    assert filecmp.cmp(outFileTxt, cmpFileTxt)
-    assert filecmp.cmp(outFileVcf, cmpFileVcf)
+    nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg=None) 
+    nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg=None)
 
 if __name__ == '__main__':
     nose.main()
