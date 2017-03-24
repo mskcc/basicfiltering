@@ -34,5 +34,4 @@ def main():
         assert filecmp.cmp(outFileTxt, cmpFileTxt)
         assert filecmp.cmp(outFileVcf, cmpFileVcf)
 
-if __name__ == '__main__':
-    main()
+main()
