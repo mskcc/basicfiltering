@@ -39,7 +39,7 @@ def setup_module():
         logging.info("Running of python command: %s \n has failed. The exception produced is %s Thus we will exit",cmd,e)
         sys.exit(1)
              
- def teardown_module():
+def teardown_module():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")

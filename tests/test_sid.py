@@ -13,7 +13,7 @@ import shlex
 import nose
 import logging
 
-def main():
+def setup_module():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     inputFileVcf = os.path.join(new_dir, "data", "sample_input", "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9.vcf")
