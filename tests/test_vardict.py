@@ -44,7 +44,7 @@ def teardown_function():
     
  
 @with_setup(setup_function, teardown_function)
-def main():
+def test_fileSimilarity():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
@@ -55,7 +55,6 @@ def main():
     nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg=None)
     teardown_function()
 
-setup_function()
 nose.main()
 #if __name__ == '__main__':
 #    nose.main()
