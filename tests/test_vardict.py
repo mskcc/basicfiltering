@@ -11,6 +11,15 @@ import os
 from subprocess import Popen
 import shlex
 import nose
+from nose.tools import import with_setup
+
+def setup_function(): 
+    pass
+ 
+def teardown_function():
+    pass
+ 
+@with_setup(setup_function, teardown_function)
 def main():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
