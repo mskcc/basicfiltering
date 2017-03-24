@@ -45,6 +45,7 @@ def teardown_function():
  
 @with_setup(setup_function, teardown_function)
 def main():
+    setup_function()
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
@@ -53,7 +54,8 @@ def main():
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg=None) 
     nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg=None)
+    teardown_function()
 
-nose.main()
+main()
 #if __name__ == '__main__':
 #    nose.main()
