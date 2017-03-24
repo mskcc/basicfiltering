@@ -11,7 +11,7 @@ import os
 from subprocess import Popen
 import shlex
 import nose
-from nose.tools import import with_setup
+from nose.tools import with_setup
 
 def setup_function(): 
     pass
