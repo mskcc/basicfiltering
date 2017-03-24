@@ -6,7 +6,7 @@
 
 '''
 
-import pytest
+import unittest
 import filecmp
 import os
 from subprocess import Popen
@@ -37,4 +37,5 @@ def main():
         assert filecmp.cmp(outFileTxt, cmpFileTxt)
         assert filecmp.cmp(outFileVcf, cmpFileVcf)
 
-main()
+if __name__ == '__main__':
+    unittest.main()
