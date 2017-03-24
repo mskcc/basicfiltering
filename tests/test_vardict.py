@@ -11,7 +11,6 @@ import os
 from subprocess import Popen
 import shlex
 import nose
-from nose.tools import with_setup
 
 def setup_module(): 
     this_dir, this_filename = os.path.split(__file__)
@@ -40,19 +39,28 @@ def setup_module():
                  
  
 def teardown_module():
-    pass
-    
- 
-#@with_setup(setup_function, teardown_function)
-def test_fileSimilarity():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
     outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
-    nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg=None) 
-    nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg=None)
+    if(os.path.isfile(outFileTxt) or (os.path.isfile(outFileVcf))):
+        os.remove(outFileTxt)
+        os.remove(outFileVcf)
+
+def test_text_fileSimilarity():
+    this_dir, this_filename = os.path.split(__file__)
+    new_dir = os.path.dirname(this_dir)
+    outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
+    cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
+    nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg="The current result text file and the original result text file for vardict are the same") 
+def test_vcf_fileSimilarity():
+    this_dir, this_filename = os.path.split(__file__)
+    new_dir = os.path.dirname(this_dir)
+    outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
+    cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
+    nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg="The current result vcf file and the original result vcf file for vardict are the same")
 
 if __name__ == '__main__':
     nose.main()
