@@ -11,6 +11,7 @@ import filecmp
 import os
 from subprocess import Popen
 import shlex
+import pytest
 def main():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
@@ -33,8 +34,16 @@ def main():
             code = 1
         else:
             assert 0
-        assert filecmp.cmp(outFileTxt, cmpFileTxt)
-        assert filecmp.cmp(outFileVcf, cmpFileVcf)
+        try:
+            assert filecmp.cmp(outFileTxt, cmpFileTxt)
+        except AssertionError:
+            print "The file " + outFileTxt + " and " + cmpFileTxt + " are not the same"
+            pytest.raiseError()  
+        try:
+            assert filecmp.cmp(outFileVcf, cmpFileVcf)
+        except AssertionError:
+            print "The file " + outFileVcf + " and " + cmpFileVcf + " are not the same"
+            pytest.raiseError()  
 
 if __name__ == '__main__':
     unittest.main()
