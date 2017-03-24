@@ -13,7 +13,7 @@ import shlex
 import nose
 from nose.tools import with_setup
 
-def setup_function(): 
+def setup_module(): 
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     inputFileVcf = os.path.join(new_dir, "data", "sample_input", "PoolTumor2-T_bc52_VarDict_1.4.6.vcf")
@@ -39,11 +39,11 @@ def setup_function():
             sys.exit(1)
                  
  
-def teardown_function():
+def teardown_module():
     pass
     
  
-@with_setup(setup_function, teardown_function)
+#@with_setup(setup_function, teardown_function)
 def test_fileSimilarity():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
@@ -53,8 +53,6 @@ def test_fileSimilarity():
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg=None) 
     nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg=None)
-    teardown_function()
 
-nose.main()
-#if __name__ == '__main__':
-#    nose.main()
+if __name__ == '__main__':
+    nose.main()
