@@ -18,6 +18,7 @@ def main():
     outFileVcf = os.path.join(this_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
     outFileTxt = os.path.join(this_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
+    cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     scriptFile = os.path.join(new_dir, "filter_vardict.py")
     cmd = "python " + scriptFile + " -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf
     args = shlex.split(cmd)
