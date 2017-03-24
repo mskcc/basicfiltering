@@ -14,13 +14,6 @@ import nose
 from nose.tools import with_setup
 
 def setup_function(): 
-    pass
- 
-def teardown_function():
-    pass
- 
-@with_setup(setup_function, teardown_function)
-def main():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     inputFileVcf = os.path.join(new_dir, "data", "sample_input", "PoolTumor2-T_bc52_VarDict_1.4.6.vcf")
@@ -35,23 +28,31 @@ def main():
         os.remove(outFileTxt)
         os.remove(outFileVcf)
     else:
-        proc = Popen(args)
-        proc.wait()
-        retcode = proc.returncode
-        if(retcode >= 0):
-            code = 1
-        else:
-            assert 0
         try:
-            assert filecmp.cmp(outFileTxt, cmpFileTxt)
-        except AssertionError:
-            print "The file " + outFileTxt + " and " + cmpFileTxt + " are not the same"
-            pytest.raiseError()  
-        try:
-            assert filecmp.cmp(outFileVcf, cmpFileVcf)
-        except AssertionError:
-            print "The file " + outFileVcf + " and " + cmpFileVcf + " are not the same"
-            pytest.raiseError()  
+            proc = Popen(args)
+            proc.wait()
+            retcode = proc.returncode
+            if(retcode >= 0):
+                pass
+        except:
+            print "Running of python command:" + cmd + "\n has failed. Thus we will exit"
+            sys.exit(1)
+                 
+ 
+def teardown_function():
+    pass
+    
+ 
+@with_setup(setup_function, teardown_function)
+def main():
+    this_dir, this_filename = os.path.split(__file__)
+    new_dir = os.path.dirname(this_dir)
+    outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
+    outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
+    cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
+    cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
+    assert filecmp.cmp(outFileTxt, cmpFileTxt)
+    assert filecmp.cmp(outFileVcf, cmpFileVcf)
 
 if __name__ == '__main__':
     nose.main()
