@@ -11,6 +11,7 @@ for Multiple Tools
 ## Requirements:
 - pyvcf : [v0.6.8](http://pyvcf.readthedocs.io/en/latest/INTRO.html)
 - pandas : [v0.16.2](http://pandas.pydata.org/)
+- nose : [v1.3.7](http://nose.readthedocs.io/en/latest/)
 
 ## Auto CWL post-process requirements
 - Convert inputVcf to have both string and file as input type
