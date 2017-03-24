@@ -19,7 +19,7 @@ def main():
     outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_PINDEL_0.2.5a7_STDfilter.txt")
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_PINDEL_0.2.5a7_STDfilter.vcf")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_PINDEL_0.2.5a7_STDfilter.txt")
-    scriptFile = os.path.join(new_dir, "filter_vardict.py")
+    scriptFile = os.path.join(new_dir, "filter_pindel.py")
     cmd = "python " + scriptFile + " -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf
     args = shlex.split(cmd)
     if(os.path.isfile(outFileTxt) or (os.path.isfile(outFileVcf))):

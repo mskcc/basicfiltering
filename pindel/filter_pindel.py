@@ -39,7 +39,6 @@ def main():
         "--verbose",
         action="store_true",
         dest="verbose",
-        default=True,
         help="make lots of noise")
     parser.add_argument(
         "-ivcf",
