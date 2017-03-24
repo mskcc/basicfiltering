@@ -6,12 +6,11 @@
 
 '''
 
-import unittest
 import filecmp
 import os
 from subprocess import Popen
 import shlex
-import pytest
+import nose
 def main():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
@@ -46,4 +45,4 @@ def main():
             pytest.raiseError()  
 
 if __name__ == '__main__':
-    unittest.main()
+    nose.main()
