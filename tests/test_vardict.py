@@ -11,7 +11,7 @@ import os
 from subprocess import Popen
 import shlex
 import nose
-
+import logging
 def setup_module(): 
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
@@ -26,17 +26,18 @@ def setup_module():
     if(os.path.isfile(outFileTxt) or (os.path.isfile(outFileVcf))):
         os.remove(outFileTxt)
         os.remove(outFileVcf)
-    else:
-        try:
-            proc = Popen(args)
-            proc.wait()
-            retcode = proc.returncode
-            if(retcode >= 0):
-                pass
-        except:
-            print "Running of python command:" + cmd + "\n has failed. Thus we will exit"
-            sys.exit(1)
-                 
+        
+    try:
+        proc = Popen(args)
+        proc.wait()
+        retcode = proc.returncode
+        if(retcode >= 0):
+            pass
+    except:
+        e = sys.exc_info()[0]
+        logging.info("Running of python command: %s \n has failed. The exception produced is %s Thus we will exit",cmd,e)
+        sys.exit(1)
+             
  
 def teardown_module():
     this_dir, this_filename = os.path.split(__file__)
@@ -54,13 +55,13 @@ def test_text_fileSimilarity():
     new_dir = os.path.dirname(this_dir)
     outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
-    nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg="The current result text file and the original result text file for vardict are the same") 
+    nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg="The current result text file and the original result text file for vardict are not the same") 
 def test_vcf_fileSimilarity():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
-    nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg="The current result vcf file and the original result vcf file for vardict are the same")
+    nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg="The current result vcf file and the original result vcf file for vardict are not the same")
 
 if __name__ == '__main__':
     nose.main()
