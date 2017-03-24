@@ -54,6 +54,6 @@ def main():
     nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg=None) 
     nose.tools.ok_(filecmp.cmp(outFileVcf, cmpFileVcf), msg=None)
 
-nose.run()
+nose.main()
 #if __name__ == '__main__':
 #    nose.main()
