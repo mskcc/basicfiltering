@@ -14,7 +14,7 @@ import shlex
 def main():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
-    inputFileVcf = os.path.join(new_dir, "data", "sample_input", "PoolTumor2-T_bc52_muTect_SomaticIndelDetector_2.3-9.vcf")
+    inputFileVcf = os.path.join(new_dir, "data", "sample_input", "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9.vcf")
     inputFileTxt = os.path.join(new_dir, "data", "sample_input", "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9.txt")
     outFileVcf = os.path.join(this_dir, "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9_STDfilter.vcf")
     outFileTxt = os.path.join(this_dir, "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9_STDfilter.txt")
