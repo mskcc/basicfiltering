@@ -12,6 +12,7 @@ from subprocess import Popen
 import shlex
 import nose
 import logging
+
 def setup_module(): 
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
@@ -21,7 +22,7 @@ def setup_module():
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     scriptFile = os.path.join(new_dir, "filter_vardict.py")
-    cmd = "python " + scriptFile + " -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf
+    cmd = "python " + scriptFile + " -v -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf
     args = shlex.split(cmd)
     if(os.path.isfile(outFileTxt) or (os.path.isfile(outFileVcf))):
         os.remove(outFileTxt)
@@ -38,8 +39,7 @@ def setup_module():
         logging.info("Running of python command: %s \n has failed. The exception produced is %s Thus we will exit",cmd,e)
         sys.exit(1)
              
- 
-def teardown_module():
+ def teardown_module():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
     outFileVcf = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.vcf")
@@ -56,6 +56,7 @@ def test_text_fileSimilarity():
     outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_VarDict_1.4.6_STDfilter.txt")
     nose.tools.ok_(filecmp.cmp(outFileTxt, cmpFileTxt), msg="The current result text file and the original result text file for vardict are not the same") 
+
 def test_vcf_fileSimilarity():
     this_dir, this_filename = os.path.split(__file__)
     new_dir = os.path.dirname(this_dir)
