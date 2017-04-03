@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 @Description : This tool helps to filter vardict vcf through command line for version 1.4.6
 @Created :  04/22/2016

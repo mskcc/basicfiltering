@@ -2,4 +2,4 @@ init:
 	pip install -r requirements.txt
 
 test:
-	nosetests tests
+	nosetests -v --with-coverage --cover-tests tests

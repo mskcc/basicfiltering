@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 @Description : This tool helps to filter muTect v1.14 txt and vcf through command line. 
 @Created :  07/17/2016
