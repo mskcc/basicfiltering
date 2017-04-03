@@ -37,7 +37,7 @@ def main():
     cwl = ruamel.yaml.load(read(params.filename_cwl),
                            ruamel.yaml.RoundTripLoader)
     script_path = os.path.join(dir_path,'filter_mutect.py')
-    cwl['baseCommands'] = ['python',script_path]
+    cwl['baseCommand'] = ['python',script_path]
     cwl['inputs']['inputVcf']['type'] = ['string', 'File']
     cwl['inputs']['inputTxt']['type'] = ['string', 'File']
     cwl['inputs']['hotspotVcf']['type'] = ['null','string', 'File']

@@ -38,7 +38,7 @@ def main():
                            ruamel.yaml.RoundTripLoader)
 
     script_path = os.path.join(dir_path,'filter_pindel.py')
-    cwl['baseCommands'] = ['python',script_path]
+    cwl['baseCommand'] = ['python',script_path]
     cwl['inputs']['inputVcf']['type'] = ['string', 'File']
     cwl['inputs']['hotspotVcf']['type'] = ['null', 'string', 'File']
     
