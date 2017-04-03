@@ -3,7 +3,7 @@
 
 import argparse
 import ruamel.yaml
-
+import os
 
 def read(filename):
     """return file contents"""
@@ -33,13 +33,14 @@ def main():
     )
 
     params = parser.parse_args()
-
+    dir_path = os.path.dirname(os.path.realpath(__file__))
     cwl = ruamel.yaml.load(read(params.filename_cwl),
                            ruamel.yaml.RoundTripLoader)
 
+    script_path = os.path.join(dir_path,'filter_vardict.py')
+    cwl['baseCommands'] = ['python',script_path]
     cwl['inputs']['inputVcf']['type'] = ['string', 'File']
-    cwl['inputs']['hotspotVcf']['type'] = ['string', 'File']
-    cwl['inputs']['version']['default'] = 'default'
+    cwl['inputs']['hotspotVcf']['type'] = ['null', 'string', 'File']
 
     write(params.filename_cwl, ruamel.yaml.dump(
         cwl, Dumper=ruamel.yaml.RoundTripDumper))

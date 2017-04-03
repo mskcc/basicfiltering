@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 @Description : This tool helps to filter SomaticIndelDetector vcf and txt through command line.GATK version: 2.3-9
 @Created :  07/25/2016

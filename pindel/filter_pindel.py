@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 @Description : This tool helps to filter pindel v0.2.5a7 vcf through command line. 
 @Created :  07/17/2014
