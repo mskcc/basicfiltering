@@ -69,7 +69,7 @@ def RunStdFilter(args):
         vcf_out = vcf_out + "_STDfilter.vcf"
         txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))   
-    vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', 'String', "1", 'Failure Reason from MuTect text File')
+    vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '1', 'String', 'Failure Reason from MuTect text File')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txtDF = pd.read_table(args.inputTxt, skiprows=1, low_memory=False)
     txt_fh = open(txt_out, "wb") 
