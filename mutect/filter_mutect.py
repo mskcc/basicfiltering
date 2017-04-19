@@ -2,7 +2,7 @@
 '''
 @Description : This tool helps to filter muTect v1.14 txt and vcf through command line. 
 @Created :  07/17/2016
-@Updated : 03/17/2017
+@Updated : 04/18/2017
 @author : Ronak H Shah
 
 '''

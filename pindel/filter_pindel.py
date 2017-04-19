@@ -2,7 +2,7 @@
 """
 @Description : This tool helps to filter pindel v0.2.5a7 vcf through command line. 
 @Created :  07/17/2014
-@Updated: 03/17/2017
+@Updated: 04/18/2017
 @author : Ronak H Shah
 
 """
