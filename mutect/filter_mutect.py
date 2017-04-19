@@ -2,7 +2,7 @@
 '''
 @Description : This tool helps to filter muTect v1.14 txt and vcf through command line. 
 @Created :  07/17/2016
-@Updated : 03/17/2017
+@Updated : 04/18/2017
 @author : Ronak H Shah
 
 '''
@@ -26,6 +26,7 @@ except ImportError:
     pass
 try:
     import vcf
+    from vcf.parser import _Info as VcfInfo, field_counts as vcf_field_counts
 except ImportError:
     logger.fatal("filter_mutect: pyvcf is not installed, please install pyvcf as it is required to run the mapping.")
     sys.exit(1)
@@ -68,6 +69,7 @@ def RunStdFilter(args):
         vcf_out = vcf_out + "_STDfilter.vcf"
         txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))   
+    vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '1', 'String', 'Failure Reason from MuTect text File')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txtDF = pd.read_table(args.inputTxt, skiprows=1, low_memory=False)
     txt_fh = open(txt_out, "wb") 
@@ -149,6 +151,10 @@ def RunStdFilter(args):
     for record in vcf_reader:
         key_for_tracking = str(record.CHROM) + ":" + str(record.POS) + ":" + str(record.REF) + ":" + str(record.ALT[0]) 
         if(key_for_tracking in keepDict):
+            failure_reason = keepDict.get(key_for_tracking)
+            if(failure_reason == "KEEP"):
+                failure_reason = "None"
+            record.add_info('FAILURE_REASON', failure_reason)
             if(record.FILTER == "PASS"):
                  
                 vcf_writer.write_record(record)
