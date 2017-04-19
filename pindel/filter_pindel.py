@@ -158,9 +158,7 @@ def RunStdFilter(args):
         vcf_out = vcf_out + "_STDfilter.vcf"
         txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
-    vcf_reader.formats['DP'] = VcfFormat(
-    'DP', 'Integer', "1"
-    'Total coverage at the site')
+    vcf_reader.formats['DP'] = VcfFormat('DP', 'Integer', "1", 'Total coverage at the site')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txt_fh = open(txt_out, "wb")
     allsamples = vcf_reader.samples
