@@ -13,6 +13,7 @@
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=RD,Number=1,Type=Integer,Description="Reference depth, how many reads support the reference">
 ##FORMAT=<ID=AD,Number=2,Type=Integer,Description="Allele depth, how many reads support this allele">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Total coverage at the site">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	PoolNormal-N	PoolTumor2-T
 2	6636086	.	A	AGCTTCGTTAAACTTCACTCGGAAGT	.	PASS	END=6636086;HOMLEN=0;SVLEN=25;SVTYPE=INS	GT:AD	0/0:554,1	0/0:719,10
 2	29451557	.	GAGGCAGGGTGCTGGCTCGAAAGCCAGCACCCTGCCTCTGGCTGGTCC	G	.	PASS	END=29451604;HOMLEN=7;HOMSEQ=AGGCAGG;SVLEN=-47;SVTYPE=DEL	GT:AD	0/0:59,0	0/0:145,5
