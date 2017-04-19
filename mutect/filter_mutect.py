@@ -152,6 +152,8 @@ def RunStdFilter(args):
         key_for_tracking = str(record.CHROM) + ":" + str(record.POS) + ":" + str(record.REF) + ":" + str(record.ALT[0]) 
         if(key_for_tracking in keepDict):
             failure_reason = keepDict.get(key_for_tracking)
+            if(failure_reason == "KEEP"):
+                failure_reason = "None"
             record.add_info('FAILURE_REASON', failure_reason)
             if(record.FILTER == "PASS"):
                  
