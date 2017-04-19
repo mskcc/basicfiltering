@@ -2,7 +2,7 @@
 """
 @Description : This tool helps to filter pindel v0.2.5a7 vcf through command line. 
 @Created :  07/17/2014
-@Updated: 03/17/2017
+@Updated: 04/18/2017
 @author : Ronak H Shah
 
 """
@@ -26,6 +26,7 @@ except ImportError:
     pass
 try:
     import vcf
+    from vcf.parser import _Format as VcfFormat, field_counts as vcf_field_counts
 except ImportError:
     logger.fatal("filter_pindel: pyvcf is not installed, please install pyvcf as it is required to run the mapping.")
     sys.exit(1)
@@ -157,6 +158,7 @@ def RunStdFilter(args):
         vcf_out = vcf_out + "_STDfilter.vcf"
         txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
+    vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total coverage at the site')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txt_fh = open(txt_out, "wb")
     allsamples = vcf_reader.samples
