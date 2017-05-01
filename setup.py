@@ -18,5 +18,6 @@ setup(
     author_email='rons.shah@gmail.com',
     url='https://github.com/rhshah/basicfiltering',
     license=license,
+    install_requires=['nose==1.3.7', 'pyvcf==0.6.7', 'pandas==0.16.2', 'coloredlogs==5.2','codecov==2.0.5', 'coverage==4.3.4'],
     packages=find_packages(exclude=('tests', 'docs'))
 )
