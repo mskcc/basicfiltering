@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='basicfiltering',
-    version='0.1.5',
+    version='0.1.6',
     description='Package for filtering multiple variant calling tools',
     long_description=readme,
     author='Ronak Shah',
