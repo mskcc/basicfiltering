@@ -4,8 +4,8 @@ outputs:
     outputBinding:
       glob: |
         ${
-          if (inputs.inputVcf )
-            return inputs.inputVcf.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, '').replace(/\.vcf/,'') + '_STDfilter.vcf';
+          if (inputs.inputVcf)
+            return inputs.inputVcf.basename.replace(".vcf","_STDfilter.vcf");
           return null;
         }
   txt:
@@ -13,7 +13,7 @@ outputs:
     outputBinding:
       glob: |
         ${
-          if (inputs.inputVcf)
-            return inputs.inputVcf.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, '').replace(/\.vcf/,'') + '_STDfilter.txt';
+          if (inputs.inputTxt)
+            return inputs.inputTxt.basename.replace(".txt","_STDfilter.txt");
           return null;
         }
