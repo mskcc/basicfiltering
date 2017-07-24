@@ -115,9 +115,9 @@ def main():
         action="store",
         dest="min",
         required=False,
-        default=25,
+        default=0,
         type=int,
-        metavar='25',
+        metavar='0',
         help="Minimum length of the indels")
     parser.add_argument(
         "-max",
@@ -158,12 +158,18 @@ def RunStdFilter(args):
         vcf_out = vcf_out + "_STDfilter.vcf"
         txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
+    del vcf_reader.infos['END']
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total coverage at the site')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txt_fh = open(txt_out, "wb")
     allsamples = vcf_reader.samples
-    sample1 = allsamples[0]
-    sample2 = allsamples[1]
+    if(len(allsamples) == 2):
+        sample1 = allsamples[0]
+        sample2 = allsamples[1]
+    else:
+        if(args.verbose):
+            logger.critical("The VCF does not have two sample columns.Please input a proper vcf with Tumor/Normal columns")
+        sys.exit(1)
     if(sample1 == args.tsampleName):
         nsampleName = sample2
     else:
@@ -172,6 +178,7 @@ def RunStdFilter(args):
         tcall = record.genotype(args.tsampleName)
         recordType = record.INFO['SVTYPE']
         recordLen = abs(int(record.INFO['SVLEN']))
+        record.INFO.pop('END',0)
         # print tcall, "recordType: ",recordType, "recordLen: ", recordLen
 
         if(tcall['AD'] is not None):
@@ -198,8 +205,8 @@ def RunStdFilter(args):
             else:
                 nvf = 0
             # print "Ndata: ",trd,tad
-
             nvfRF = int(args.tnr) * nvf
+            
             # print recordLen, args.min, args.max
         if(args.hotspotVcf):
             hotspotFlag = checkHotspot(args.hotspotVcf, record.CHROM, record.POS)
