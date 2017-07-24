@@ -68,14 +68,19 @@ def RunStdFilter(args):
     else:
         vcf_out = vcf_out + "_STDfilter.vcf"
         txt_out = txt_out + "_STDfilter.txt"
-    vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))   
+    vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '1', 'String', 'Failure Reason from MuTect text File')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txtDF = pd.read_table(args.inputTxt, skiprows=1, low_memory=False)
     txt_fh = open(txt_out, "wb") 
     allsamples = vcf_reader.samples
-    sample1 = allsamples[0]
-    sample2 = allsamples[1]
+    if(len(allsamples) == 2):
+        sample1 = allsamples[0]
+        sample2 = allsamples[1]
+    else:
+        if(args.verbose):
+            logger.critical("The VCF does not have two sample columns.Please input a proper vcf with Tumor/Normal columns")
+        sys.exit(1)
     if(sample1 == args.tsampleName):
         nsampleName = sample2
     else:

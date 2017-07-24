@@ -140,8 +140,13 @@ def RunStdFilter(args):
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txt_fh = open(txt_out, "wb")
     allsamples = vcf_reader.samples
-    sample1 = allsamples[0]
-    sample2 = allsamples[1]
+    if(len(allsamples) == 2):
+        sample1 = allsamples[0]
+        sample2 = allsamples[1]
+    else:
+        if(args.verbose):
+            logger.critical("The VCF does not have two sample columns.Please input a proper vcf with Tumor/Normal columns")
+        sys.exit(1)
     if(sample1 == args.tsampleName):
         nsampleName = sample2
     else:
@@ -175,9 +180,12 @@ def RunStdFilter(args):
                 nvf = nad / ndp
             else:
                 nvf = 0
-            # print "Ndata: ",trd,tad
-
             nvfRF = int(args.tnr) * nvf
+        else:
+            logger.critical("filter_vardict: There are no genotype values for Normal. We will exit.")
+            sys.exit(1)
+            # print "Ndata: ",trd,tad
+        
         if(args.hotspotVcf):
             hotspotFlag = checkHotspot(args.hotspotVcf, record.CHROM, record.POS)
         else:
