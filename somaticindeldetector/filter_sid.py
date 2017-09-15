@@ -95,8 +95,8 @@ def main():
         dest="tnr",
         required=False,
         type=int,
-        default=5,
-        metavar='5',
+        default=0,
+        metavar='0',
         help="Tumor-Normal variant frequency ratio threshold ")
     parser.add_argument(
         "-vf",
