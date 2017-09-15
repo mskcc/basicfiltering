@@ -44,7 +44,7 @@ def main():
    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str,metavar='SomeName', help="Name of the tumor Sample")
    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0', help="Tumor total depth threshold")
    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5', help="Tumor allele depth threshold")
-   parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5', help="Tumor-Normal variant frequency ratio threshold ")
+   parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=0, metavar='0', help="Tumor-Normal variant frequency ratio threshold ")
    parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01', help="Tumor variant frequency threshold ")
    parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hostpot.vcf', help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
    parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output', help="Full Path to the output dir.")
