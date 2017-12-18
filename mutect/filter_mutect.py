@@ -71,7 +71,7 @@ def RunStdFilter(args):
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '1', 'String', 'Failure Reason from MuTect text File')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
-    txtDF = pd.read_table(args.inputTxt, skiprows=1, low_memory=False)
+    txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
     txt_fh = open(txt_out, "wb") 
     allsamples = vcf_reader.samples
     if(len(allsamples) == 2):
