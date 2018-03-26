@@ -36,14 +36,14 @@ inputs:
 
   dp:
     type: ["null", int]
-    default: 0
+    default: 5
     doc: Tumor total depth threshold
     inputBinding:
       prefix: --totaldepth 
 
   ad:
     type: ["null", int]
-    default: 5
+    default: 3
     doc: Tumor allele depth threshold
     inputBinding:
       prefix: --alleledepth 
@@ -70,17 +70,24 @@ inputs:
 
   min:
     type: ["null", int]
-    default: 25
+    default: 0
     doc: Minimum length of the indels
     inputBinding:
       prefix: --min_var_len 
 
   max:
     type: ["null", int]
-    default: 2000
+    default: 200
     doc: Max length of the indels
     inputBinding:
       prefix: --max_var_len 
+
+  mhl:
+    type: ["null", int]
+    default: 5
+    doc: Max length of micro-homology at indel breakpoint
+    inputBinding:
+      prefix: --max_hom_len 
 
   hotspotVcf:
     type: ["null", string]

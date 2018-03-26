@@ -26,13 +26,14 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",help="make lots of noise")
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf freebayes file which needs to be filtered")
     parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
-    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0',help="Tumor total depth threshold")
-    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5',help="Tumor allele depth threshold")
-    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=0, metavar='0',help="Tumor-Normal variant frequency ratio threshold ")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5',help="Tumor total depth threshold")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3',help="Tumor allele depth threshold")
+    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5',help="Tumor-Normal variant frequency ratio threshold ")
     parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant frequency threshold ")
     parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output',help="Full Path to the output dir.")
     parser.add_argument("-min", "--min_var_len", action="store", dest="min", required=False, default=0, type=int, metavar='0',help="Minimum length of the indels")
-    parser.add_argument("-max", "--max_var_len", action="store", dest="max", required=False, default=2000, type=int, metavar='500',help="Max length of the indels")
+    parser.add_argument("-max", "--max_var_len", action="store", dest="max", required=False, default=200, type=int, metavar='200',help="Max length of the indels")
+    parser.add_argument("-mhl", "--max_hom_len", action="store", dest="mhl", required=False, default=5, type=int, metavar='5',help="Max length of micro-homology at indel breakpoint")
     parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hostpot.vcf',help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
 
     args = parser.parse_args()
@@ -41,7 +42,6 @@ def main():
     (stdfilterVCF) = RunStdFilter(args)
     if(args.verbose):
         logger.info("Finished the run for doing standard filter.")
-
 
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
@@ -74,8 +74,8 @@ def RunStdFilter(args):
         tcall = record.genotype(args.tsampleName)
         recordType = record.INFO['SVTYPE']
         recordLen = abs(int(record.INFO['SVLEN']))
+        recordHomLen = int(record.INFO['HOMLEN'])
         record.INFO.pop('END',0)
-        # print tcall, "recordType: ",recordType, "recordLen: ", recordLen
 
         if(tcall['AD'] is not None):
             trd, tad = tcall['AD']
@@ -100,15 +100,13 @@ def RunStdFilter(args):
                 nvf = nad / ndp
             else:
                 nvf = 0
-            # print "Ndata: ",trd,tad
             nvfRF = int(args.tnr) * nvf
-            
-            # print recordLen, args.min, args.max
+
         if(args.hotspotVcf):
             hotspotFlag = checkHotspot(args.hotspotVcf, record.CHROM, record.POS)
         else:
             hotspotFlag = False
-        if((recordLen >= int(args.min)) and (recordLen <= int(args.max))):
+        if((recordLen >= int(args.min)) and (recordLen <= int(args.max)) and (recordHomLen <= int(args.mhl))):
             if(tvf > nvfRF):
                 if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                     if(recordType != "RPL"):
@@ -129,7 +127,7 @@ def RunStdFilter(args):
                             txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" +
                                          str(record.POS) + "\t" + str(record.REF) + "\t" +
                                          str(record.ALT[0]) + "\t" + "." + "\n")
-
+    vcf_writer.close()
     txt_fh.close()
     return(vcf_out)
 

@@ -26,10 +26,10 @@ def main():
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input SomaticIndelDetector vcf file which needs to be filtered")
     parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=str, metavar='SomeID.txt',help="Input SomaticIndelDetector txt file which needs to be filtered")
     parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
-    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0',help="Tumor total depth threshold")
-    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5',help="Tumor allele depth threshold")
-    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=0, metavar='0',help="Tumor-Normal variant frequency ratio threshold ")
-    parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant frequency threshold ")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5',help="Tumor total depth threshold")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3',help="Tumor allele depth threshold")
+    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5',help="Tumor-Normal variant frequency ratio threshold")
+    parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant frequency threshold")
     parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hostpot.vcf',help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
     parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output',help="Full Path to the output dir.")
 
@@ -39,7 +39,6 @@ def main():
     (stdfilterVCF) = RunStdFilter(args)
     if(args.verbose):
         logger.info("Finished the run for doing standard filter.")
-
 
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
@@ -125,10 +124,9 @@ def RunStdFilter(args):
                     txt_fh.write(
                         args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" +
                         str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
-
+    vcf_writer.close()
     txt_fh.close()
     return(vcf_out)
-
 
 def checkHotspot(hotspotVcf, chromosome, start):
     hotspotFlag = False

@@ -25,10 +25,11 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",help="make lots of noise")
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf vardict file which needs to be filtered")
     parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
-    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0',help="Tumor total depth threshold")
-    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5',help="Tumor allele depth threshold")
-    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=0, metavar='0',help="Tumor-Normal variant frequency ratio threshold ")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5',help="Tumor total depth threshold")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3',help="Tumor allele depth threshold")
+    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5',help="Tumor-Normal variant frequency ratio threshold ")
     parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant frequency threshold ")
+    parser.add_argument("-mq", "--minqual", action="store", dest="mq", required=False, type=int, default=20, metavar='20',help="Minimum variant call quality")
     parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hostpot.vcf',help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
     parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output',help="Full Path to the output dir.")
 
@@ -38,7 +39,6 @@ def main():
     (stdfilterVCF) = RunStdFilter(args)
     if(args.verbose):
         logger.info("Finished the run for doing standard filter.")
-        
 
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
@@ -67,6 +67,11 @@ def RunStdFilter(args):
         nsampleName = sample1
     for record in vcf_reader:
         tcall = record.genotype(args.tsampleName)
+        somaticStatus = True if "Somatic" in record.INFO['STATUS'] else False
+        if(tcall['QUAL'] is not None):
+            tmq = int(tcall['QUAL'])
+        else:
+            tmq = 0
         if(tcall['DP'] is not None):
             tdp = int(tcall['DP'])
         else:
@@ -79,9 +84,12 @@ def RunStdFilter(args):
             tvf = int(tad) / float(tdp)
         else:
             tvf = 0
-        # print "Tdata: ",trd,tad
         ncall = record.genotype(nsampleName)
         if(ncall):
+            if(ncall['QUAL'] is not None):
+                nmq = int(ncall['QUAL'])
+            else:
+                nmq = 0
             if(ncall['DP'] is not None):
                 ndp = int(ncall['DP'])
             else:
@@ -98,39 +106,26 @@ def RunStdFilter(args):
         else:
             logger.critical("filter_vardict: There are no genotype values for Normal. We will exit.")
             sys.exit(1)
-            # print "Ndata: ",trd,tad
-        
+
         if(args.hotspotVcf):
             hotspotFlag = checkHotspot(args.hotspotVcf, record.CHROM, record.POS)
         else:
             hotspotFlag = False
         if(tvf > nvfRF):
-            if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
+            if(somaticStatus & (tmq >= int(args.mq)) & (nmq >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                 vcf_writer.write_record(record)
-                txt_fh.write(args.tsampleName +
-                             "\t" +
-                             record.CHROM +
-                             "\t" +
-                             str(record.POS) +
-                             "\t" +
-                             str(record.REF) +
-                             "\t" +
-                             str(record.ALT[0]) +
-                             "\t" +
-                             "." +
-                             "\n")
+                txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) +
+                    "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
 
         else:
             if(hotspotFlag):
-                if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
+                if(somaticStatus & (tmq >= int(args.mq)) & (nmq >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                     vcf_writer.write_record(record)
-                    txt_fh.write(
-                        args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" +
-                        str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
-
+                    txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) +
+                        "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
+    vcf_writer.close()
     txt_fh.close()
     return(vcf_out)
-
 
 def checkHotspot(hotspotVcf, chromosome, start):
     hotspotFlag = False

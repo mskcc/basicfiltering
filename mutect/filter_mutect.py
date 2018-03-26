@@ -32,21 +32,20 @@ def main():
    parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf', help="Input vcf muTect file which needs to be filtered")
    parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=str, metavar='SomeID.txt', help="Input txt muTect file which needs to be filtered")
    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str,metavar='SomeName', help="Name of the tumor Sample")
-   parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0', help="Tumor total depth threshold")
-   parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5', help="Tumor allele depth threshold")
-   parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=0, metavar='0', help="Tumor-Normal variant frequency ratio threshold ")
+   parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5', help="Tumor total depth threshold")
+   parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3', help="Tumor allele depth threshold")
+   parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5', help="Tumor-Normal variant frequency ratio threshold ")
    parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01', help="Tumor variant frequency threshold ")
    parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hostpot.vcf', help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
    parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output', help="Full Path to the output dir.")
-   
+
    args = parser.parse_args()
    if(args.verbose):
        logger.info("Started the run for doing standard filter.")
    (stdfilterVCF) = RunStdFilter(args)
    if(args.verbose):
        logger.info("Finished the run for doing standard filter.")
-       
- 
+
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]
@@ -60,7 +59,6 @@ def RunStdFilter(args):
         txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '1', 'String', 'Failure Reason from MuTect text File')
-    vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
     txt_fh = open(txt_out, "wb") 
     allsamples = vcf_reader.samples
@@ -75,8 +73,8 @@ def RunStdFilter(args):
         nsampleName = sample2
     else:
         nsampleName = sample1 
-    
-    # Dictionalry to store records to keep
+
+    # Dictionary to store records to keep
     keepDict = {}
 
     for index, row in txtDF.iterrows():
@@ -105,11 +103,11 @@ def RunStdFilter(args):
             hotspotFlag = checkHotspot(args.hotspotVcf, chr, pos) 
         else:
             hotspotFlag = False
-        
+
         # This will help in filtering VCF
         key_for_tracking = str(chr) + ":" + str(pos) + ":" + str(ref_allele) + ":" + str(alt_allele)
         if(judgement == "KEEP"):
-            
+
             if(key_for_tracking in keepDict):
                 print("MutectStdFilter:There is a repeat ", key_for_tracking)
             else:
@@ -141,8 +139,9 @@ def RunStdFilter(args):
                         else:
                             keepDict[key_for_tracking] = failure_reason
                         txt_fh.write(args.tsampleName + "\t" + str(chr) + "\t" + str(pos) + "\t" + str(ref_allele) + "\t" + str(alt_allele) + "\t" + str(failure_reason) + "\n")
-    
+
     txt_fh.close()
+    vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     for record in vcf_reader:
         key_for_tracking = str(record.CHROM) + ":" + str(record.POS) + ":" + str(record.REF) + ":" + str(record.ALT[0]) 
         if(key_for_tracking in keepDict):
@@ -151,12 +150,12 @@ def RunStdFilter(args):
                 failure_reason = "None"
             record.add_info('FAILURE_REASON', failure_reason)
             if(record.FILTER == "PASS"):
-                 
+
                 vcf_writer.write_record(record)
             else:
                 record.FILTER = "PASS"
                 vcf_writer.write_record(record)
-               
+
         else:
             continue
     vcf_writer.close()
@@ -170,7 +169,7 @@ def checkHotspot(hotspotVcf, chromosome, start):
     except ValueError:
         logger.info("filter_mutect: Region not present in vcf, %s:%s", str(chromosome), start)
         record = None
-    
+
     if(record is None):
         hotspotFlag = False
     else:

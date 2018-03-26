@@ -51,9 +51,9 @@ inputs:
   tnr:
     type: ["null", int]
     default: 5
-    doc: Tumor-Normal variant frequency ratio threshold 
+    doc: Tumor-Normal variant frequency ratio threshold
     inputBinding:
-      prefix: --tnRatio 
+      prefix: --tnRatio
 
   vf:
     type: ["null", float]
@@ -61,6 +61,13 @@ inputs:
     doc: Tumor variant frequency threshold 
     inputBinding:
       prefix: --variantfrequency 
+
+  mq:
+    type: ["null", int]
+    default: 20
+    doc: Minimum variant call quality
+    inputBinding:
+      prefix: --minqual
 
   hotspotVcf:
     type: ["null", string]

@@ -43,14 +43,14 @@ inputs:
 
   dp:
     type: ["null", int]
-    default: 0
+    default: 5
     doc: Tumor total depth threshold
     inputBinding:
       prefix: --totaldepth 
 
   ad:
     type: ["null", int]
-    default: 5
+    default: 3
     doc: Tumor allele depth threshold
     inputBinding:
       prefix: --alleledepth 

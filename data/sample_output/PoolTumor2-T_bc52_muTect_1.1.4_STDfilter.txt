@@ -35,6 +35,7 @@ PoolTumor2-T	1	118166750	A	G	KEEP
 PoolTumor2-T	1	120429402	A	G	KEEP
 PoolTumor2-T	1	120468134	C	T	KEEP
 PoolTumor2-T	1	120468487	T	C	KEEP
+PoolTumor2-T	1	121485145	C	G	possible_contamination,alt_allele_in_normal
 PoolTumor2-T	1	149857797	T	C	KEEP
 PoolTumor2-T	1	152330829	G	T	KEEP
 PoolTumor2-T	1	152331013	G	A	KEEP
@@ -232,6 +233,7 @@ PoolTumor2-T	4	78271554	C	G	KEEP
 PoolTumor2-T	4	87163541	G	T	KEEP
 PoolTumor2-T	4	120324304	C	T	KEEP
 PoolTumor2-T	4	143043397	G	A	alt_allele_in_normal
+PoolTumor2-T	4	143081836	G	A	possible_contamination
 PoolTumor2-T	4	143158979	A	C	alt_allele_in_normal
 PoolTumor2-T	4	153245521	C	G	possible_contamination
 PoolTumor2-T	4	166144830	A	G	KEEP
@@ -274,6 +276,7 @@ PoolTumor2-T	5	38947185	C	G	KEEP
 PoolTumor2-T	5	38949632	C	T	KEEP
 PoolTumor2-T	5	38962656	T	C	possible_contamination
 PoolTumor2-T	5	40457488	G	A	KEEP
+PoolTumor2-T	5	40457629	G	A	clustered_read_position
 PoolTumor2-T	5	52665368	G	T	KEEP
 PoolTumor2-T	5	56168571	G	A	KEEP
 PoolTumor2-T	5	62835420	G	A	KEEP
@@ -286,6 +289,7 @@ PoolTumor2-T	5	112175617	T	A	KEEP
 PoolTumor2-T	5	112213686	G	C	nearby_gap_events,possible_contamination,clustered_read_position
 PoolTumor2-T	5	112227998	G	A	KEEP
 PoolTumor2-T	5	140256920	G	C	KEEP
+PoolTumor2-T	5	142329273	G	A	possible_contamination
 PoolTumor2-T	5	149460627	G	A	KEEP
 PoolTumor2-T	5	149502838	G	C	KEEP
 PoolTumor2-T	5	170828123	G	A	KEEP
@@ -378,6 +382,7 @@ PoolTumor2-T	6	152164026	A	G	KEEP
 PoolTumor2-T	6	152332921	C	G	KEEP
 PoolTumor2-T	6	152333032	A	G	KEEP
 PoolTumor2-T	6	157150230	A	G	alt_allele_in_normal
+PoolTumor2-T	6	157470120	G	A	possible_contamination
 PoolTumor2-T	6	157511319	G	A	alt_allele_in_normal
 PoolTumor2-T	6	159215375	G	T	KEEP
 PoolTumor2-T	6	160640117	A	G	alt_allele_in_normal,clustered_read_position
@@ -428,10 +433,12 @@ PoolTumor2-T	7	65970787	T	A	KEEP
 PoolTumor2-T	7	70859670	C	T	KEEP
 PoolTumor2-T	7	81336535	C	A	alt_allele_in_normal
 PoolTumor2-T	7	81340916	C	A	KEEP
+PoolTumor2-T	7	81374551	A	T	possible_contamination
 PoolTumor2-T	7	81388001	C	A	KEEP
 PoolTumor2-T	7	92404285	A	G	KEEP
 PoolTumor2-T	7	103275947	A	C	KEEP
 PoolTumor2-T	7	106522693	G	A	alt_allele_in_normal
+PoolTumor2-T	7	114302265	T	C	possible_contamination
 PoolTumor2-T	7	116339672	C	T	KEEP
 PoolTumor2-T	7	116397572	A	G	alt_allele_in_normal
 PoolTumor2-T	7	116403127	A	G	KEEP
@@ -478,6 +485,7 @@ PoolTumor2-T	8	2387994	T	C	KEEP
 PoolTumor2-T	8	3489674	G	A	alt_allele_in_normal
 PoolTumor2-T	8	3489677	T	C	alt_allele_in_normal
 PoolTumor2-T	8	3489842	C	T	alt_allele_in_normal
+PoolTumor2-T	8	4166516	A	T	possible_contamination
 PoolTumor2-T	8	5498584	C	A	KEEP
 PoolTumor2-T	8	11096235	G	T	alt_allele_in_normal
 PoolTumor2-T	8	11587234	G	T	alt_allele_in_normal
@@ -512,6 +520,7 @@ PoolTumor2-T	9	8331548	C	T	KEEP
 PoolTumor2-T	9	16206756	T	G	alt_allele_in_normal
 PoolTumor2-T	9	20776854	T	G	KEEP
 PoolTumor2-T	9	21993964	T	C	KEEP
+PoolTumor2-T	9	22003803	C	A	possible_contamination
 PoolTumor2-T	9	22012051	T	C	alt_allele_in_normal
 PoolTumor2-T	9	33676618	C	T	KEEP
 PoolTumor2-T	9	80646091	T	A	clustered_read_position
@@ -564,6 +573,7 @@ PoolTumor2-T	11	39894274	C	T	KEEP
 PoolTumor2-T	11	42138434	C	T	KEEP
 PoolTumor2-T	11	64571710	C	T	possible_contamination
 PoolTumor2-T	11	64575505	C	T	alt_allele_in_normal
+PoolTumor2-T	11	69511849	A	C	possible_contamination
 PoolTumor2-T	11	69631013	C	G	KEEP
 PoolTumor2-T	11	81185242	G	T	KEEP
 PoolTumor2-T	11	85980945	G	T	KEEP
@@ -580,6 +590,7 @@ PoolTumor2-T	11	118342819	T	G	KEEP
 PoolTumor2-T	11	118370615	C	G	KEEP
 PoolTumor2-T	11	118372452	C	G	KEEP
 PoolTumor2-T	11	123606029	A	C	alt_allele_in_normal
+PoolTumor2-T	11	125514323	A	G	possible_contamination
 PoolTumor2-T	12	401969	C	A	KEEP
 PoolTumor2-T	12	406427	G	C	KEEP
 PoolTumor2-T	12	416764	C	A	KEEP
@@ -641,6 +652,7 @@ PoolTumor2-T	12	120554466	G	A	KEEP
 PoolTumor2-T	12	121435778	C	T	KEEP
 PoolTumor2-T	12	132001302	A	T	KEEP
 PoolTumor2-T	12	132001303	G	T	KEEP
+PoolTumor2-T	12	132547138	A	G	clustered_read_position
 PoolTumor2-T	12	133208752	T	A	KEEP
 PoolTumor2-T	12	133211059	T	C	KEEP
 PoolTumor2-T	12	133257837	C	A	KEEP
@@ -748,6 +760,7 @@ PoolTumor2-T	16	14042077	A	G	KEEP
 PoolTumor2-T	16	27356584	T	G	KEEP
 PoolTumor2-T	16	30129936	C	T	KEEP
 PoolTumor2-T	16	33373312	G	T	KEEP
+PoolTumor2-T	16	55329381	G	C	nearby_gap_events,clustered_read_position
 PoolTumor2-T	16	56866196	T	C	alt_allele_in_normal
 PoolTumor2-T	16	56871762	T	C	KEEP
 PoolTumor2-T	16	56872824	G	A	alt_allele_in_normal
@@ -767,6 +780,7 @@ PoolTumor2-T	16	81892645	C	T	KEEP
 PoolTumor2-T	16	81892646	G	A	KEEP
 PoolTumor2-T	16	81892913	C	T	alt_allele_in_normal
 PoolTumor2-T	16	81917099	G	T	alt_allele_in_normal
+PoolTumor2-T	16	81927571	T	C	nearby_gap_events
 PoolTumor2-T	16	81946328	G	A	alt_allele_in_normal
 PoolTumor2-T	16	81957227	C	T	KEEP
 PoolTumor2-T	16	81957349	G	T	KEEP
@@ -819,6 +833,7 @@ PoolTumor2-T	17	61307713	C	G	KEEP
 PoolTumor2-T	17	62008760	G	A	KEEP
 PoolTumor2-T	17	70120111	G	A	KEEP
 PoolTumor2-T	17	77280452	A	G	KEEP
+PoolTumor2-T	17	77386109	A	G	clustered_read_position
 PoolTumor2-T	17	78796907	C	G	KEEP
 PoolTumor2-T	17	78829114	G	C	KEEP
 PoolTumor2-T	17	78857631	C	T	KEEP
@@ -922,6 +937,7 @@ PoolTumor2-T	20	40738926	G	A	KEEP
 PoolTumor2-T	20	40746918	C	T	KEEP
 PoolTumor2-T	20	40748532	C	A	KEEP
 PoolTumor2-T	20	40748802	C	A	KEEP
+PoolTumor2-T	20	40979190	C	T	possible_contamination
 PoolTumor2-T	20	40979469	A	T	KEEP
 PoolTumor2-T	20	41101067	A	T	KEEP
 PoolTumor2-T	20	46256424	C	T	KEEP
@@ -936,6 +952,7 @@ PoolTumor2-T	21	11021189	G	A	alt_allele_in_normal
 PoolTumor2-T	21	11029526	A	G	KEEP
 PoolTumor2-T	21	11047650	C	T	possible_contamination
 PoolTumor2-T	21	11049346	C	T	KEEP
+PoolTumor2-T	21	11057983	G	A	possible_contamination
 PoolTumor2-T	21	31384240	C	T	alt_allele_in_normal
 PoolTumor2-T	21	36164388	G	C	KEEP
 PoolTumor2-T	21	39795279	A	T	KEEP
@@ -964,6 +981,7 @@ PoolTumor2-T	X	1314857	G	A	alt_allele_in_normal
 PoolTumor2-T	X	1314858	G	T	alt_allele_in_normal
 PoolTumor2-T	X	1325301	G	T	KEEP
 PoolTumor2-T	X	1325426	C	T	KEEP
+PoolTumor2-T	X	15822405	T	C	possible_contamination,clustered_read_position
 PoolTumor2-T	X	22516183	G	A	KEEP
 PoolTumor2-T	X	39930099	C	G	KEEP
 PoolTumor2-T	X	39933358	G	A	possible_contamination
@@ -1000,10 +1018,12 @@ PoolTumor2-T	MT	16163	A	G	KEEP
 PoolTumor2-T	MT	16186	C	T	KEEP
 PoolTumor2-T	MT	16263	T	C	KEEP
 PoolTumor2-T	MT	16316	A	G	KEEP
+PoolTumor2-T	GL000220.1	118546	G	T	nearby_gap_events
 PoolTumor2-T	GL000220.1	119409	C	T	nearby_gap_events
 PoolTumor2-T	GL000220.1	119911	C	T	KEEP
 PoolTumor2-T	GL000220.1	119967	T	C	KEEP
 PoolTumor2-T	GL000220.1	119970	C	T	alt_allele_in_normal
+PoolTumor2-T	GL000220.1	120149	C	G	possible_contamination
 PoolTumor2-T	GL000220.1	120319	C	T	KEEP
 PoolTumor2-T	GL000220.1	125098	C	G	KEEP
 PoolTumor2-T	GL000220.1	126307	G	A	KEEP
