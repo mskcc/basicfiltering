@@ -1,29 +1,19 @@
-#!/usr/bin/python
-"""
-@Description : This tool helps to filter pindel v0.2.5a7 vcf through command line. 
-@Created :  07/17/2014
-@Updated: 04/18/2017
-@author : Ronak H Shah
+#!/usr/bin/env python
+'''
+@Description : This tool helps to filter pindel v0.2.5a7 vcf
+@Created : 07/17/2014
+@Updated : 03/26/2018
+@author : Ronak H Shah, Cyriac Kandoth
 
-"""
+'''
 from __future__ import division
-import argparse
-import sys
-import time
-import os
-import logging
+import argparse, sys, os, time, logging
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%m/%d/%Y %I:%M:%S %p',
         level=logging.DEBUG)
 logger = logging.getLogger('filter_pindel')
-try:
-    import coloredlogs
-    coloredlogs.install(level='DEBUG')
-except ImportError:
-    logger.warning("filter_pindel: coloredlogs is not installed, please install it if you wish to see color in logs on standard out.")
-    pass
 try:
     import vcf
     from vcf.parser import _Format as VcfFormat, field_counts as vcf_field_counts
@@ -32,112 +22,18 @@ except ImportError:
     sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(
-        prog='filter_pindel.py',
-        description='Filter indels from the output of pindel v0.2.5a7',
-        usage='%(prog)s [options]')
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        dest="verbose",
-        help="make lots of noise")
-    parser.add_argument(
-        "-ivcf",
-        "--inputVcf",
-        action="store",
-        dest="inputVcf",
-        required=True,
-        type=str,
-        metavar='SomeID.vcf',
-        help="Input vcf freebayes file which needs to be filtered")
-    parser.add_argument(
-        "-tsn",
-        "--tsampleName",
-        action="store",
-        dest="tsampleName",
-        required=True,
-        type=str,
-        metavar='SomeName',
-        help="Name of the tumor Sample")
-    parser.add_argument(
-        "-dp",
-        "--totaldepth",
-        action="store",
-        dest="dp",
-        required=False,
-        type=int,
-        default=0,
-        metavar='0',
-        help="Tumor total depth threshold")
-    parser.add_argument(
-        "-ad",
-        "--alleledepth",
-        action="store",
-        dest="ad",
-        required=False,
-        type=int,
-        default=5,
-        metavar='5',
-        help="Tumor allele depth threshold")
-    parser.add_argument(
-        "-tnr",
-        "--tnRatio",
-        action="store",
-        dest="tnr",
-        required=False,
-        type=int,
-        default=0,
-        metavar='0',
-        help="Tumor-Normal variant frequency ratio threshold ")
-    parser.add_argument(
-        "-vf",
-        "--variantfrequency",
-        action="store",
-        dest="vf",
-        required=False,
-        type=float,
-        default=0.01,
-        metavar='0.01',
-        help="Tumor variant frequency threshold ")
-    parser.add_argument(
-        "-o",
-        "--outDir",
-        action="store",
-        dest="outdir",
-        required=False,
-        type=str,
-        metavar='/somepath/output',
-        help="Full Path to the output dir.")
-    parser.add_argument(
-        "-min",
-        "--min_var_len",
-        action="store",
-        dest="min",
-        required=False,
-        default=0,
-        type=int,
-        metavar='0',
-        help="Minimum length of the indels")
-    parser.add_argument(
-        "-max",
-        "--max_var_len",
-        action="store",
-        dest="max",
-        required=False,
-        default=2000,
-        type=int,
-        metavar='500',
-        help="Max length of the indels")
-    parser.add_argument(
-        "-hvcf",
-        "--hotspotVcf",
-        action="store",
-        dest="hotspotVcf",
-        required=False,
-        type=str,
-        metavar='hostpot.vcf',
-        help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
+    parser = argparse.ArgumentParser(prog='filter_pindel.py',description='Filter indels from the output of pindel v0.2.5a7',usage='%(prog)s [options]')
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",help="make lots of noise")
+    parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf freebayes file which needs to be filtered")
+    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0',help="Tumor total depth threshold")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5',help="Tumor allele depth threshold")
+    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=0, metavar='0',help="Tumor-Normal variant frequency ratio threshold ")
+    parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant frequency threshold ")
+    parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output',help="Full Path to the output dir.")
+    parser.add_argument("-min", "--min_var_len", action="store", dest="min", required=False, default=0, type=int, metavar='0',help="Minimum length of the indels")
+    parser.add_argument("-max", "--max_var_len", action="store", dest="max", required=False, default=2000, type=int, metavar='500',help="Max length of the indels")
+    parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hostpot.vcf',help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
 
     args = parser.parse_args()
     if(args.verbose):

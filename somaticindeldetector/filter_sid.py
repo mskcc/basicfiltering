@@ -1,17 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
-@Description : This tool helps to filter SomaticIndelDetector vcf and txt through command line.GATK version: 2.3-9
-@Created :  07/25/2016
-@Updated : 03/17/2017
-@author : Ronak H Shah
+@Description : This tool helps to filter SomaticIndelDetector (GATK version: 2.3-9) vcf and txt
+@Created : 07/25/2016
+@Updated : 03/26/2018
+@author : Ronak H Shah, Cyriac Kandoth
 
 '''
 from __future__ import division
-import argparse
-import sys
-import os
-import time
-import logging
+import argparse, sys, os, time, logging
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -19,113 +15,23 @@ logging.basicConfig(
         level=logging.DEBUG)
 logger = logging.getLogger('filter_sid')
 try:
-    import coloredlogs
-    coloredlogs.install(level='DEBUG')
-except ImportError:
-    logger.warning("filter_sid: coloredlogs is not installed, please install it if you wish to see color in logs on standard out.")
-    pass
-try:
     import vcf
 except ImportError:
     logger.fatal("filter_sid: pyvcf is not installed, please install pyvcf as it is required to run the mapping.")
     sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(
-        prog='filter_sid.py',
-        description='Filter indels from the output of SomaticIndelDetector in GATK v2.3-9',
-        usage='%(prog)s [options]')
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        dest="verbose",
-        help="make lots of noise")
-    parser.add_argument(
-        "-ivcf",
-        "--inputVcf",
-        action="store",
-        dest="inputVcf",
-        required=True,
-        type=str, 
-        metavar='SomeID.vcf',
-        help="Input SomaticIndelDetector vcf file which needs to be filtered")
-    parser.add_argument(
-        "-itxt",
-        "--inputTxt",
-        action="store",
-        dest="inputTxt",
-        required=True,
-        type=str,
-        metavar='SomeID.txt',
-        help="Input SomaticIndelDetector txt file which needs to be filtered")
-    parser.add_argument(
-        "-tsn",
-        "--tsampleName",
-        action="store",
-        dest="tsampleName",
-        required=True,
-        type=str,
-        metavar='SomeName',
-        help="Name of the tumor Sample")
-    parser.add_argument(
-        "-dp",
-        "--totaldepth",
-        action="store",
-        dest="dp",
-        required=False,
-        type=int,
-        default=0,
-        metavar='0',
-        help="Tumor total depth threshold")
-    parser.add_argument(
-        "-ad",
-        "--alleledepth",
-        action="store",
-        dest="ad",
-        required=False,
-        type=int,
-        default=5,
-        metavar='5',
-        help="Tumor allele depth threshold")
-    parser.add_argument(
-        "-tnr",
-        "--tnRatio",
-        action="store",
-        dest="tnr",
-        required=False,
-        type=int,
-        default=0,
-        metavar='0',
-        help="Tumor-Normal variant frequency ratio threshold ")
-    parser.add_argument(
-        "-vf",
-        "--variantfrequency",
-        action="store",
-        dest="vf",
-        required=False,
-        type=float,
-        default=0.01,
-        metavar='0.01',
-        help="Tumor variant frequency threshold ")
-    parser.add_argument(
-        "-hvcf",
-        "--hotspotVcf",
-        action="store",
-        dest="hotspotVcf",
-        required=False,
-        type=str,
-        metavar='hostpot.vcf',
-        help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
-    parser.add_argument(
-        "-o",
-        "--outDir",
-        action="store",
-        dest="outdir",
-        required=False,
-        type=str,
-        metavar='/somepath/output',
-        help="Full Path to the output dir.")
+    parser = argparse.ArgumentParser(prog='filter_sid.py',description='Filter indels from the output of SomaticIndelDetector in GATK v2.3-9',usage='%(prog)s [options]')
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",help="make lots of noise")
+    parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input SomaticIndelDetector vcf file which needs to be filtered")
+    parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=str, metavar='SomeID.txt',help="Input SomaticIndelDetector txt file which needs to be filtered")
+    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=0, metavar='0',help="Tumor total depth threshold")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=5, metavar='5',help="Tumor allele depth threshold")
+    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=0, metavar='0',help="Tumor-Normal variant frequency ratio threshold ")
+    parser.add_argument("-vf", "--variantfrequency", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant frequency threshold ")
+    parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hostpot.vcf',help="Input bgzip / tabix indexed hotspot vcf file to used for filtering")
+    parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output',help="Full Path to the output dir.")
 
     args = parser.parse_args()
     if(args.verbose):
@@ -134,7 +40,7 @@ def main():
     if(args.verbose):
         logger.info("Finished the run for doing standard filter.")
 
-# Code that does Standard Filter
+
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]

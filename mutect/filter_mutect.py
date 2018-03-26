@@ -1,29 +1,19 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 '''
-@Description : This tool helps to filter muTect v1.14 txt and vcf through command line. 
-@Created :  07/17/2016
-@Updated : 04/18/2017
-@author : Ronak H Shah
+@Description : This tool helps to filter muTect v1.14 txt and vcf
+@Created : 07/17/2016
+@Updated : 03/26/2018
+@author : Ronak H Shah, Cyriac Kandoth
 
 '''
 from __future__ import division
-import argparse
-import sys
-import os
-import time
-import logging
+import argparse, sys, os, time, logging
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%m/%d/%Y %I:%M:%S %p',
         level=logging.DEBUG)
 logger = logging.getLogger('filter_mutect')
-try:
-    import coloredlogs
-    coloredlogs.install(level='DEBUG')
-except ImportError:
-    logger.warning("filter_mutect: coloredlogs is not installed, please install it if you wish to see color in logs on standard out.")
-    pass
 try:
     import vcf
     from vcf.parser import _Info as VcfInfo, field_counts as vcf_field_counts
@@ -56,7 +46,7 @@ def main():
    if(args.verbose):
        logger.info("Finished the run for doing standard filter.")
        
-# Code that does Standard Filter  
+ 
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]
