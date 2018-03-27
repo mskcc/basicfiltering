@@ -2,7 +2,6 @@
 
 from setuptools import setup, find_packages
 
-
 with open('README.md') as f:
     readme = f.read()
 
@@ -11,13 +10,13 @@ with open('LICENSE') as f:
 
 setup(
     name='basicfiltering',
-    version='0.1.6',
-    description='Package for filtering multiple variant calling tools',
+    version='0.2.0',
+    description='Basic false-positive filters for VCFs/TXTs from somatic variant callers',
     long_description=readme,
-    author='Ronak Shah',
-    author_email='rons.shah@gmail.com',
-    url='https://github.com/rhshah/basicfiltering',
+    author='Ronak Shah, Cyriac Kandoth',
+    author_email='ckandoth@gmail.com',
+    url='https://github.com/mskcc/basicfiltering',
     license=license,
-    install_requires=['nose==1.3.7', 'pyvcf==0.6.7', 'pandas==0.16.2', 'codecov==2.0.5', 'coverage==4.3.4'],
+    install_requires=['nose==1.3.7', 'pyvcf==0.6.8', 'pandas==0.19.2'],
     packages=find_packages(exclude=('tests', 'docs'))
 )
