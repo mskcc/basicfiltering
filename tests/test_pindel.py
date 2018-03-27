@@ -21,8 +21,9 @@ def setup_module():
     outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_PINDEL_0.2.5a7_STDfilter.txt")
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_PINDEL_0.2.5a7_STDfilter.vcf")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_PINDEL_0.2.5a7_STDfilter.txt")
+    hspFileVcf = os.path.join(new_dir, "data", "hotspot-list-union-v1-v2.vcf")
     scriptFile = os.path.join(new_dir, "filter_pindel.py")
-    cmd = "python " + scriptFile + " -v -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf
+    cmd = "python " + scriptFile + " -v -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf + " -hvcf " + hspFileVcf
     args = shlex.split(cmd)
     if(os.path.isfile(outFileTxt) or (os.path.isfile(outFileVcf))):
         os.remove(outFileTxt)

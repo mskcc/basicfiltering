@@ -22,8 +22,9 @@ def setup_module():
     outFileTxt = os.path.join(new_dir, "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9_STDfilter.txt")
     cmpFileTxt = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9_STDfilter.txt")
     cmpFileVcf = os.path.join(new_dir, "data", "sample_output", "PoolTumor2-T_bc52_SomaticIndelDetector_2.3-9_STDfilter.vcf")
+    hspFileVcf = os.path.join(new_dir, "data", "hotspot-list-union-v1-v2.vcf")
     scriptFile = os.path.join(new_dir, "filter_sid.py")
-    cmd = "python " + scriptFile + " -v -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf + " -itxt " + inputFileTxt
+    cmd = "python " + scriptFile + " -v -tsn PoolTumor2-T " + "-ivcf " + inputFileVcf + " -itxt " + inputFileTxt + " -hvcf " + hspFileVcf
     args = shlex.split(cmd)
     if(os.path.isfile(outFileTxt) or (os.path.isfile(outFileVcf))):
         os.remove(outFileTxt)
