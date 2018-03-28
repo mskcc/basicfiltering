@@ -86,6 +86,8 @@ def RunStdFilter(args):
         recordHomLen = int(record.INFO['HOMLEN'])
         record.INFO.pop('END',0)
         locus = str(record.CHROM) + ":" + str(record.POS)
+        # Remove INFO/SVTYPE altogether because it causes VEP to avoid properly annotating it
+        del record.INFO['SVTYPE']
 
         if(tcall['AD'] is not None):
             trd, tad = tcall['AD']
