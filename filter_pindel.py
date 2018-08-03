@@ -3,8 +3,9 @@
 @Description : This tool helps to filter pindel v0.2.5a7 vcf
 @Created : 07/17/2016
 @Updated : 03/26/2018
-@author : Ronak H Shah, Cyriac Kandoth
-
+@Updated : 07/27/2018
+@Updated : 08/03/2018
+@author : Ronak H Shah, Cyriac Kandoth, Zuojian Tang
 '''
 from __future__ import division
 import argparse, sys, os, time, logging
@@ -56,8 +57,9 @@ def RunStdFilter(args):
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     del vcf_reader.infos['END']
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total coverage at the site')
-    vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
-    txt_fh = open(txt_out, "wb")
+
+    if_swap_sample = False
+
     allsamples = vcf_reader.samples
     if(len(allsamples) == 2):
         sample1 = allsamples[0]
@@ -70,6 +72,14 @@ def RunStdFilter(args):
         nsampleName = sample2
     else:
         nsampleName = sample1
+        if_swap_sample = True
+        n = vcf_reader.samples[0]
+        t = vcf_reader.samples[1]
+        vcf_reader.samples[0] = t
+        vcf_reader.samples[1] = n
+
+    vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
+    txt_fh = open(txt_out, "wb")
 
     # If provided, load hotspots into a dictionary for quick lookup
     hotspot = {}
@@ -114,22 +124,28 @@ def RunStdFilter(args):
                 nvf = 0
             nvfRF = int(args.tnr) * nvf
 
+        if (if_swap_sample):
+            n = record.samples[0]
+            t = record.samples[1]
+            record.samples[0] = t
+            record.samples[1] = n
+
         if((recordLen >= int(args.min)) and (recordLen <= int(args.max)) and (recordHomLen <= int(args.mhl))):
             if(tvf > nvfRF):
                 if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
-                    if(recordType != "RPL"):
-                        vcf_writer.write_record(record)
-                        txt_fh.write(
-                            args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" +
-                            str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
+                    vcf_writer.write_record(record)
+                    vcf_writer.flush()
+                    txt_fh.write(
+                        args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" +
+                        str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
             else:
                 if(locus in hotspot):
                     if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
-                        if(recordType != "RPL"):
-                            vcf_writer.write_record(record)
-                            txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" +
-                                         str(record.POS) + "\t" + str(record.REF) + "\t" +
-                                         str(record.ALT[0]) + "\t" + "." + "\n")
+                        vcf_writer.write_record(record)
+                        vcf_writer.flush()
+                        txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" +
+                                     str(record.POS) + "\t" + str(record.REF) + "\t" +
+                                     str(record.ALT[0]) + "\t" + "." + "\n")
     vcf_writer.close()
     txt_fh.close()
     return(vcf_out)
