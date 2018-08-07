@@ -2,13 +2,12 @@
 '''
 @Description : This tool helps to filter pindel v0.2.5a7 vcf
 @Created : 07/17/2016
-@Updated : 03/26/2018
-@Updated : 07/27/2018
 @Updated : 08/03/2018
 @author : Ronak H Shah, Cyriac Kandoth, Zuojian Tang
+
 '''
 from __future__ import division
-import argparse, sys, os, time, logging
+import argparse, sys, os, time, logging, cmo
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -17,9 +16,9 @@ logging.basicConfig(
 logger = logging.getLogger('filter_pindel')
 try:
     import vcf
-    from vcf.parser import _Format as VcfFormat, field_counts as vcf_field_counts
+    from vcf.parser import _Info as VcfInfo, _Format as VcfFormat
 except ImportError:
-    logger.fatal("filter_pindel: pyvcf is not installed, please install pyvcf as it is required to run the mapping.")
+    logger.fatal("filter_mutect: pyvcf is not installed")
     sys.exit(1)
 
 def main():
@@ -27,6 +26,7 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",help="make lots of noise")
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf freebayes file which needs to be filtered")
     parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
+    parser.add_argument("-rf", "--refFasta", action="store", dest="refFasta", required=True, type=str, metavar='ref.fa', help="Reference genome in fasta format")
     parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5',help="Tumor total depth threshold")
     parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3',help="Tumor allele depth threshold")
     parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5',help="Tumor-Normal variant fraction ratio threshold ")
@@ -47,16 +47,15 @@ def main():
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]
-    txt_out = vcf_out
     if(args.outdir):
-        vcf_out = os.path.join(args.outdir,vcf_out + "_STDfilter.vcf")
-        txt_out = os.path.join(args.outdir,txt_out + "_STDfilter.txt")
-    else:
-        vcf_out = vcf_out + "_STDfilter.vcf"
-        txt_out = txt_out + "_STDfilter.txt"
+        vcf_out = os.path.join(args.outdir,vcf_out)
+    txt_out = vcf_out + "_STDfilter.txt"
+    vcf_out = vcf_out + "_STDfilter.vcf"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     del vcf_reader.infos['END']
-    vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total coverage at the site')
+    vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
+    vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
+    vcf_reader.formats['PL'] = VcfFormat('PL', 'G', 'Integer', 'Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification')
 
     if_swap_sample = False
 
@@ -148,7 +147,10 @@ def RunStdFilter(args):
                                      str(record.ALT[0]) + "\t" + "." + "\n")
     vcf_writer.close()
     txt_fh.close()
-    return(vcf_out)
+    # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it
+    norm_gz_vcf = cmo.util.normalize_vcf(vcf_out, args.refFasta)
+    cmo.util.tabix_file(norm_gz_vcf)
+    return(norm_gz_vcf)
 
 if __name__ == "__main__":
     start_time = time.time()

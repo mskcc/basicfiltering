@@ -7,7 +7,7 @@
 
 '''
 from __future__ import division
-import argparse, sys, os, time, logging
+import argparse, sys, os, time, logging, cmo
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -16,35 +16,36 @@ logging.basicConfig(
 logger = logging.getLogger('filter_mutect')
 try:
     import vcf
-    from vcf.parser import _Info as VcfInfo, field_counts as vcf_field_counts
+    from vcf.parser import _Info as VcfInfo, _Format as VcfFormat
 except ImportError:
-    logger.fatal("filter_mutect: pyvcf is not installed, please install pyvcf as it is required to run the mapping.")
+    logger.fatal("filter_mutect: pyvcf is not installed")
     sys.exit(1)
 try:
     import pandas as pd
 except ImportError:
-    logger.fatal("filter_mutect: pandas is not installed, please install pandas as it is required to run the mapping.")
+    logger.fatal("filter_mutect: pandas is not installed")
     sys.exit(1)
 
 def main():
-   parser = argparse.ArgumentParser(prog='filter_mutect.py', description='Filter snps from the output of muTect v1.1.4', usage='%(prog)s [options]')
-   parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", help="make lots of noise")
-   parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf', help="Input vcf muTect file which needs to be filtered")
-   parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=str, metavar='SomeID.txt', help="Input txt muTect file which needs to be filtered")
-   parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str,metavar='SomeName', help="Name of the tumor Sample")
-   parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5', help="Tumor total depth threshold")
-   parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3', help="Tumor allele depth threshold")
-   parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5', help="Tumor-Normal variant fraction ratio threshold ")
-   parser.add_argument("-vf", "--variantfraction", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01', help="Tumor variant fraction threshold ")
-   parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hotspot.vcf', help="Input vcf file with hotspots that skip VAF ratio filter")
-   parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output', help="Full Path to the output dir.")
-
-   args = parser.parse_args()
-   if(args.verbose):
-       logger.info("Started the run for doing standard filter.")
-   (stdfilterVCF) = RunStdFilter(args)
-   if(args.verbose):
-       logger.info("Finished the run for doing standard filter.")
+    parser = argparse.ArgumentParser(prog='filter_mutect.py', description='Filter snps from the output of muTect v1.1.4', usage='%(prog)s [options]')
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", help="make lots of noise")
+    parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf', help="Input vcf muTect file which needs to be filtered")
+    parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=str, metavar='SomeID.txt', help="Input txt muTect file which needs to be filtered")
+    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName', help="Name of the tumor Sample")
+    parser.add_argument("-rf", "--refFasta", action="store", dest="refFasta", required=True, type=str, metavar='ref.fa', help="Reference genome in fasta format")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5', help="Tumor total depth threshold")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3', help="Tumor allele depth threshold")
+    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5', help="Tumor-Normal variant fraction ratio threshold ")
+    parser.add_argument("-vf", "--variantfraction", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01', help="Tumor variant fraction threshold ")
+    parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hotspot.vcf', help="Input vcf file with hotspots that skip VAF ratio filter")
+    parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output', help="Full Path to the output dir.")
+ 
+    args = parser.parse_args()
+    if(args.verbose):
+        logger.info("Started the run for doing standard filter.")
+    (stdfilterVCF) = RunStdFilter(args)
+    if(args.verbose):
+        logger.info("Finished the run for doing standard filter.")
 
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
@@ -52,13 +53,14 @@ def RunStdFilter(args):
     txt_out = os.path.basename(args.inputTxt)
     txt_out = os.path.splitext(txt_out)[0]
     if(args.outdir):
-        vcf_out = os.path.join(args.outdir,vcf_out + "_STDfilter.vcf")
-        txt_out = os.path.join(args.outdir,txt_out + "_STDfilter.txt")
-    else:
-        vcf_out = vcf_out + "_STDfilter.vcf"
-        txt_out = txt_out + "_STDfilter.txt"
+        vcf_out = os.path.join(args.outdir,vcf_out)
+        txt_out = os.path.join(args.outdir,txt_out)
+    vcf_out = vcf_out + "_STDfilter.vcf"
+    txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '1', 'String', 'Failure Reason from MuTect text File', 'muTect', 'v1.1.4')
+    vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
+    vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
     txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
     txt_fh = open(txt_out, "wb") 
     allsamples = vcf_reader.samples
@@ -164,7 +166,10 @@ def RunStdFilter(args):
         else:
             continue
     vcf_writer.close()
-    return(vcf_out)
+    # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it
+    norm_gz_vcf = cmo.util.normalize_vcf(vcf_out, args.refFasta)
+    cmo.util.tabix_file(norm_gz_vcf)
+    return(norm_gz_vcf)
 
 if __name__ == "__main__":
     start_time = time.time()  
