@@ -1,7 +1,12 @@
+dist: precise
+sudo: false
 language: python
+
 python:
   - "2.7"
-# command to install dependencies
-install: "pip install -r requirements.txt"
-# command to run tests
+
+install:
+  - "apt-get install bcftools tabix"
+  - "pip install -r requirements.txt"
+
 script: nosetests -v tests
