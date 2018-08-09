@@ -50,6 +50,7 @@ def RunStdFilter(args):
     txt_out = vcf_out + "_STDfilter.txt"
     vcf_out = vcf_out + "_STDfilter.vcf"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
+    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
@@ -117,7 +118,7 @@ def RunStdFilter(args):
             logger.critical("filter_vardict: There are no genotype values for Normal. We will exit.")
             sys.exit(1)
         locus = str(record.CHROM) + ":" + str(record.POS)
-
+        record.add_info('set', 'VarDict')
         if(tvf > nvfRF):
             if(somaticStatus & (tmq >= int(args.mq)) & (nmq >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                 vcf_writer.write_record(record)

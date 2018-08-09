@@ -58,7 +58,8 @@ def RunStdFilter(args):
     vcf_out = vcf_out + "_STDfilter.vcf"
     txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
-    vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '1', 'String', 'Failure Reason from MuTect text File', 'muTect', 'v1.1.4')
+    vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '.', 'String', 'Failure Reason from MuTect text File', 'muTect', 'v1.1.4')
+    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
     txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
@@ -156,8 +157,8 @@ def RunStdFilter(args):
             if(failure_reason == "KEEP"):
                 failure_reason = "None"
             record.add_info('FAILURE_REASON', failure_reason)
+            record.add_info('set', 'MuTect')
             if(record.FILTER == "PASS"):
-
                 vcf_writer.write_record(record)
             else:
                 record.FILTER = "PASS"

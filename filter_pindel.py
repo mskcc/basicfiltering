@@ -53,6 +53,7 @@ def RunStdFilter(args):
     vcf_out = vcf_out + "_STDfilter.vcf"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     del vcf_reader.infos['END']
+    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
     vcf_reader.formats['PL'] = VcfFormat('PL', 'G', 'Integer', 'Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification')
@@ -130,6 +131,7 @@ def RunStdFilter(args):
             record.samples[1] = n
 
         if((recordLen >= int(args.min)) and (recordLen <= int(args.max)) and (recordHomLen <= int(args.mhl))):
+            record.add_info('set', 'Pindel')
             if(tvf > nvfRF):
                 if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                     vcf_writer.write_record(record)
