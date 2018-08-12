@@ -63,7 +63,7 @@ def RunStdFilter(args):
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
 
-    allsamples = vcf_reader.samples
+    allsamples = list(vcf_reader.samples)
     if(len(allsamples) != 2):
         if(args.verbose):
             logger.critical("The VCF does not have two genotype columns. Please input a proper vcf with Tumor/Normal columns")
