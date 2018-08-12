@@ -53,20 +53,20 @@ def RunStdFilter(args):
     vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
-    vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
-    txt_fh = open(txt_out, "wb")
+
     allsamples = vcf_reader.samples
-    if(len(allsamples) == 2):
-        sample1 = allsamples[0]
-        sample2 = allsamples[1]
-    else:
+    if(len(allsamples) != 2):
         if(args.verbose):
-            logger.critical("The VCF does not have two sample columns. Please input a proper vcf with Tumor/Normal columns")
+            logger.critical("The VCF does not have two genotype columns. Please input a proper vcf with Tumor/Normal columns")
         sys.exit(1)
-    if(sample1 == args.tsampleName):
-        nsampleName = sample2
-    else:
-        nsampleName = sample1
+
+    # If the caller reported the normal genotype column before the tumor, swap those around
+    if_swap_sample = False
+    if(allsamples[1] == args.tsampleName):
+        if_swap_sample = True
+        vcf_reader.samples[0] = allsamples[1]
+        vcf_reader.samples[1] = allsamples[0]
+    nsampleName = vcf_reader.samples[1]
 
     # If provided, load hotspots into a dictionary for quick lookup
     hotspot = {}
@@ -76,6 +76,8 @@ def RunStdFilter(args):
             genomic_locus = str(record.CHROM) + ":" + str(record.POS)
             hotspot[genomic_locus] = True
 
+    vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
+    txt_fh = open(txt_out, "wb")
     for record in vcf_reader:
         tcall = record.genotype(args.tsampleName)
         somaticStatus = True if "Somatic" in record.INFO['STATUS'] else False
@@ -119,6 +121,12 @@ def RunStdFilter(args):
             sys.exit(1)
         locus = str(record.CHROM) + ":" + str(record.POS)
         record.add_info('set', 'VarDict')
+
+        if (if_swap_sample):
+            nrm = record.samples[0]
+            tum = record.samples[1]
+            record.samples[0] = tum
+            record.samples[1] = nrm
         if(tvf > nvfRF):
             if(somaticStatus & (tmq >= int(args.mq)) & (nmq >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                 vcf_writer.write_record(record)

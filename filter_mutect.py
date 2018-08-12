@@ -39,7 +39,7 @@ def main():
     parser.add_argument("-vf", "--variantfraction", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01', help="Tumor variant fraction threshold ")
     parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hotspot.vcf', help="Input vcf file with hotspots that skip VAF ratio filter")
     parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output', help="Full Path to the output dir.")
- 
+
     args = parser.parse_args()
     if(args.verbose):
         logger.info("Started the run for doing standard filter.")
@@ -62,20 +62,19 @@ def RunStdFilter(args):
     vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
-    txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
-    txt_fh = open(txt_out, "wb") 
+
     allsamples = vcf_reader.samples
-    if(len(allsamples) == 2):
-        sample1 = allsamples[0]
-        sample2 = allsamples[1]
-    else:
+    if(len(allsamples) != 2):
         if(args.verbose):
-            logger.critical("The VCF does not have two sample columns. Please input a proper vcf with Tumor/Normal columns")
+            logger.critical("The VCF does not have two genotype columns. Please input a proper vcf with Tumor/Normal columns")
         sys.exit(1)
-    if(sample1 == args.tsampleName):
-        nsampleName = sample2
-    else:
-        nsampleName = sample1 
+
+    # If the caller reported the normal genotype column before the tumor, swap those around
+    if_swap_sample = False
+    if(allsamples[1] == args.tsampleName):
+        if_swap_sample = True
+        vcf_reader.samples[0] = allsamples[1]
+        vcf_reader.samples[1] = allsamples[0]
 
     # Dictionary to store records to keep
     keepDict = {}
@@ -88,28 +87,30 @@ def RunStdFilter(args):
             genomic_locus = str(record.CHROM) + ":" + str(record.POS)
             hotspot[genomic_locus] = True
 
+    txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
+    txt_fh = open(txt_out, "wb")
     for index, row in txtDF.iterrows():
         chr = row.loc['contig']  # Get Chromosome
         pos = row.loc['position']  # Get Position
-        ref_allele = row.loc['ref_allele'] 
+        ref_allele = row.loc['ref_allele']
         alt_allele = row.loc['alt_allele']
         trd = int(row.loc['t_ref_count'])
         tad = int(row.loc['t_alt_count'])
-        tdp = trd + tad 
+        tdp = trd + tad
         if(tdp != 0):
             tvf = int(tad) / float(tdp)
         else:
             tvf = 0
         nrd = int(row.loc['n_ref_count'])
         nad = int(row.loc['n_alt_count'])
-        ndp = nrd + nad 
+        ndp = nrd + nad
         if(ndp != 0):
             nvf = int(nad) / float(ndp)
         else:
             nvf = 0
         judgement = row.loc['judgement']  # Get REJECT or PASS
         failure_reason = row.loc['failure_reasons']  # Get Reject Reason
-        nvfRF = int(args.tnr) * nvf 
+        nvfRF = int(args.tnr) * nvf
 
         # This will help in filtering VCF
         key_for_tracking = str(chr) + ":" + str(pos) + ":" + str(ref_allele) + ":" + str(alt_allele)
@@ -147,17 +148,22 @@ def RunStdFilter(args):
                         else:
                             keepDict[key_for_tracking] = failure_reason
                         txt_fh.write(args.tsampleName + "\t" + str(chr) + "\t" + str(pos) + "\t" + str(ref_allele) + "\t" + str(alt_allele) + "\t" + str(failure_reason) + "\n")
-
     txt_fh.close()
+
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     for record in vcf_reader:
-        key_for_tracking = str(record.CHROM) + ":" + str(record.POS) + ":" + str(record.REF) + ":" + str(record.ALT[0]) 
+        key_for_tracking = str(record.CHROM) + ":" + str(record.POS) + ":" + str(record.REF) + ":" + str(record.ALT[0])
         if(key_for_tracking in keepDict):
             failure_reason = keepDict.get(key_for_tracking)
             if(failure_reason == "KEEP"):
                 failure_reason = "None"
             record.add_info('FAILURE_REASON', failure_reason)
             record.add_info('set', 'MuTect')
+            if (if_swap_sample):
+                nrm = record.samples[0]
+                tum = record.samples[1]
+                record.samples[0] = tum
+                record.samples[1] = nrm
             if(record.FILTER == "PASS"):
                 vcf_writer.write_record(record)
             else:
@@ -173,7 +179,7 @@ def RunStdFilter(args):
     return(norm_gz_vcf)
 
 if __name__ == "__main__":
-    start_time = time.time()  
+    start_time = time.time()
     main()
     end_time = time.time()
     totaltime = end_time - start_time

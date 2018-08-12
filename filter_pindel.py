@@ -58,25 +58,19 @@ def RunStdFilter(args):
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
     vcf_reader.formats['PL'] = VcfFormat('PL', 'G', 'Integer', 'Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification')
 
-    if_swap_sample = False
-
     allsamples = vcf_reader.samples
-    if(len(allsamples) == 2):
-        sample1 = allsamples[0]
-        sample2 = allsamples[1]
-    else:
+    if(len(allsamples) != 2):
         if(args.verbose):
-            logger.critical("The VCF does not have two sample columns. Please input a proper vcf with Tumor/Normal columns")
+            logger.critical("The VCF does not have two genotype columns. Please input a proper vcf with Tumor/Normal columns")
         sys.exit(1)
-    if(sample1 == args.tsampleName):
-        nsampleName = sample2
-    else:
-        nsampleName = sample1
+
+    # If the caller reported the normal genotype column before the tumor, swap those around
+    if_swap_sample = False
+    if(allsamples[1] == args.tsampleName):
         if_swap_sample = True
-        n = vcf_reader.samples[0]
-        t = vcf_reader.samples[1]
-        vcf_reader.samples[0] = t
-        vcf_reader.samples[1] = n
+        vcf_reader.samples[0] = allsamples[1]
+        vcf_reader.samples[1] = allsamples[0]
+    nsampleName = vcf_reader.samples[1]
 
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     txt_fh = open(txt_out, "wb")
@@ -125,11 +119,10 @@ def RunStdFilter(args):
             nvfRF = int(args.tnr) * nvf
 
         if (if_swap_sample):
-            n = record.samples[0]
-            t = record.samples[1]
-            record.samples[0] = t
-            record.samples[1] = n
-
+            nrm = record.samples[0]
+            tum = record.samples[1]
+            record.samples[0] = tum
+            record.samples[1] = nrm
         if((recordLen >= int(args.min)) and (recordLen <= int(args.max)) and (recordHomLen <= int(args.mhl))):
             record.add_info('set', 'Pindel')
             if(tvf > nvfRF):
