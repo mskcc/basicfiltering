@@ -159,16 +159,17 @@ def main():
             alt = alts[idx_alt-1]
             len_alt = len(alt)
         if type == str_cplx or type == str_isrt or type == str_dele or len_ref != len_alt:
-            if (tcounter_reads_indels + tcounter_reads_sf) >= tvd:
-                pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
-                pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf - nvd) / float(ndp)
-                if pert_tnoise > tnoise or pert_nnoise > nnoise:
-                    vcf_in_row.filter.add('CPX')
-                    out_forR.append(
-                        str(chr) + "\t" + str(pos) + "\t" + "CPX" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
-                else:
-                    out_forR.append(
-                        str(chr) + "\t" + str(pos) + "\t" + "PASS" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
+            #if (tcounter_reads_indels + tcounter_reads_sf) >= tvd:
+            pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
+            pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf) / float(ndp)
+            # pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf - nvd) / float(ndp)
+            if pert_tnoise > tnoise or pert_nnoise > nnoise:
+                vcf_in_row.filter.add('CPX')
+                out_forR.append(
+                    str(chr) + "\t" + str(pos) + "\t" + "CPX" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
+            else:
+                out_forR.append(
+                    str(chr) + "\t" + str(pos) + "\t" + "PASS" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
         vcf_out_fw.write(vcf_in_row)
     tbam.close()
     nbam.close()
