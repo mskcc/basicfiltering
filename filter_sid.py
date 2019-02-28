@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 '''
-@Description : This tool helps to filter SomaticIndelDetector (GATK version: 2.3-9) vcf and txt
-@Created : 07/25/2016
-@Updated : 03/26/2018
+@description : This tool helps to filter SomaticIndelDetector (GATK version: 2.3-9) vcf and txt
+@created : 07/25/2016
+@updated : 03/26/2018
 @author : Ronak H Shah, Cyriac Kandoth
 
 '''

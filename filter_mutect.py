@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 '''
-@Description : This tool helps to filter muTect v1.1.4 txt and vcf
-@Created : 07/17/2016
-@Updated : 03/26/2018
+@description : This tool helps to filter muTect v1.1.4 txt and vcf
+@created : 07/17/2016
+@updated : 03/26/2018
 @author : Ronak H Shah, Cyriac Kandoth
 
 '''

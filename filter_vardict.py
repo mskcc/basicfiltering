@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 '''
-@Description : This tool helps to filter vardict version 1.4.6 vcf
-@Created : 04/22/2016
-@Updated : 03/26/2018
+@description : This tool helps to filter vardict version 1.4.6 vcf
+@created : 04/22/2016
+@updated : 03/26/2018
 @author : Ronak H Shah, Cyriac Kandoth
 
 '''

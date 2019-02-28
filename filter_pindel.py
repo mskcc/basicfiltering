@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 '''
-@Description : This tool helps to filter pindel v0.2.5a7 vcf
-@Created : 07/17/2016
-@Updated : 08/03/2018
+@description : This tool helps to filter pindel v0.2.5a7 vcf
+@created : 07/17/2016
+@updated : 08/03/2018
 @author : Ronak H Shah, Cyriac Kandoth, Zuojian Tang
 
 '''

@@ -1,17 +1,15 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+'''
+@description : Given a VCF listing somatic events and a TN-pair of BAMs, apply a complex event filter based on indels/soft-clipping noise
+@created : 11/12/2018
+@updated : 02/28/2019
+@author : Zuojian Tang, Cyriac Kandoth
 
 '''
-@Description : This tool helps to post filtering Vardict's complex/Insertion/Deletion events by retrieving indels/soft-clipping information from T/N BAM files
-@Created :  11/12/2018
-'''
-
 from __future__ import division
 from __future__ import print_function
-
-import argparse, time, os, sys, logging, re, csv, glob, subprocess
-import pysam
+import argparse, time, os, sys, logging, re, csv, glob, subprocess, pysam, inspect
 from pysam import VariantFile
-import inspect
 
 def main():
 
@@ -20,27 +18,16 @@ def main():
     str_dele = "Deletion"
     str_isrt = "Insertion"
 
-    parser = argparse.ArgumentParser(prog='basic-filtering.vardict-complex-events.py',
-                                     description='This tool helps to post filtering Vardict\'s complex events by retrieving indels/soft-clipping information from T/N BAM files.',
-                                     usage='%(prog)s [options]')
-    parser.add_argument("-VCF", "--vcffile", action="store", dest="vcffile", required=True, type=str,
-                        help="VarDict VCF file")
-    parser.add_argument("-T", "--tumorbam", action="store", dest="tumorbam", required=True, type=str,
-                        help="tumor bam file")
-    parser.add_argument("-N", "--normalbam", action="store", dest="normalbam", required=True, type=str,
-                        help="normal bam file")
-    parser.add_argument('-TN', '--tumorname', action="store", dest="tumorname", required=True, type=str,
-                        help="tumor sample ID")
-    parser.add_argument("-o", "--output", action="store", dest="output", required=True, type=str,
-                        help="Output file name including path")
-    parser.add_argument("-LEN", "--flanklen", action="store", dest="flanklen", required=False,
-                        type=int, default=50, help="flanking length around position [default: 50]")
-    parser.add_argument("-MQ", "--mappingquality", action="store", dest="mappingquality", required=False,
-                        type=int, default=20, help="mapping quality [default: 20]")
-    parser.add_argument("-TNOISE", "--tnoise", action="store", dest="tnoise", required=False,
-                        type=float, default=0.2, help="tumor noise (number of reads with indels or soft-clipping/total depth reported by VarDict [default: 0.2]")
-    parser.add_argument("-NNoise", "--nnoise", action="store", dest="nnoise", required=False,
-                        type=float, default=0.1, help="normal noise (number of reads with indels or soft-clipping/total depth reported by VarDict [default: 0.1]")
+    parser = argparse.ArgumentParser(prog='filter_complex.py', description='Apply a complex event filter based on indels/soft-clipping noise', usage='%(prog)s [options]')
+    parser.add_argument("-i", "--input-vcf", action="store", dest="vcffile", required=True, type=str, help="Input VCF file")
+    parser.add_argument("-tb", "--tumor-bam", action="store", dest="tumorbam", required=True, type=str, help="Tumor bam file")
+    parser.add_argument("-nb", "--normal-bam", action="store", dest="normalbam", required=True, type=str, help="Normal bam file")
+    parser.add_argument('-t', '--tumor-id', action="store", dest="tumorname", required=True, type=str, help="Tumor sample ID")
+    parser.add_argument("-o", "--output-vcf", action="store", dest="output", required=True, type=str, help="Output VCF file")
+    parser.add_argument("-l", "--flank-len", action="store", dest="flanklen", required=False, type=int, default=50, help="Flanking bps around event to check for noise [default: 50]")
+    parser.add_argument("-mq", "--mapping-qual", action="store", dest="mappingquality", required=False, type=int, default=20, help="Minimum mapping quality of noisy reads [default: 20]")
+    parser.add_argument("-tn", "--tum-noise", action="store", dest="tnoise", required=False, type=float, default=0.2, help="Maximum allowed tumor noise [default: 0.2]")
+    parser.add_argument("-nn", "--nrm-noise", action="store", dest="nnoise", required=False, type=float, default=0.1, help="Maximum allowed normal noise [default: 0.1]")
 
     args = parser.parse_args()
     vcf_in = args.vcffile
@@ -65,9 +52,8 @@ def main():
 
     # read vcf file
     vcf_in_fr = VariantFile(vcf_in)
-    vcf_in_fr.header.formats.add("IS", "2", "Integer",
-                                 "(Number of reads with indels, number of reads with soft-clipping) [within the flanking region of event]")
-    vcf_in_fr.header.filters.add("CPX", None, None, "VarDict Complex and Indels events.")
+    vcf_in_fr.header.formats.add("IS", "2", "Integer", "(Number of reads with indels, number of reads with soft-clipping) [within the flanking region of event]")
+    vcf_in_fr.header.filters.add("cpx", None, None, "Complex event in a region with indel/soft-clipping noise, potentially misalignments")
     vcf_out_fw = VariantFile(vcf_out, 'w', header=vcf_in_fr.header)
 
     allsamples = vcf_in_fr.header.samples
@@ -159,14 +145,12 @@ def main():
             alt = alts[idx_alt-1]
             len_alt = len(alt)
         if type == str_cplx or type == str_isrt or type == str_dele or len_ref != len_alt:
-            #if (tcounter_reads_indels + tcounter_reads_sf) >= tvd:
             pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
             pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf) / float(ndp)
-            # pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf - nvd) / float(ndp)
             if pert_tnoise > tnoise or pert_nnoise > nnoise:
-                vcf_in_row.filter.add('CPX')
+                vcf_in_row.filter.add('cpx')
                 out_forR.append(
-                    str(chr) + "\t" + str(pos) + "\t" + "CPX" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
+                    str(chr) + "\t" + str(pos) + "\t" + "cpx" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
             else:
                 out_forR.append(
                     str(chr) + "\t" + str(pos) + "\t" + "PASS" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
@@ -238,5 +222,3 @@ if __name__ == "__main__":
     totaltime = end_time - start_time
     print(totaltime)
     sys.exit(0)
-
-
