@@ -53,7 +53,7 @@ def RunStdFilter(args):
     vcf_out = vcf_out + "_STDfilter.vcf"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     del vcf_reader.infos['END']
-    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
+    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
     vcf_reader.formats['PL'] = VcfFormat('PL', 'G', 'Integer', 'Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification')
@@ -99,10 +99,7 @@ def RunStdFilter(args):
             trd = 0
             tad = 0
         tdp = trd + tad
-        if(tdp != 0):
-            tvf = int(tad) / float(tdp)
-        else:
-            tvf = 0
+        tvf = int(tad)/float(tdp) if(tdp != 0) else 0
         # print "Tdata: ",trd,tad
         ncall = record.genotype(nsampleName)
         if(ncall):
@@ -112,10 +109,7 @@ def RunStdFilter(args):
                 nrd = 0
                 nad = 0
             ndp = nrd + nad
-            if(ndp != 0):
-                nvf = nad / ndp
-            else:
-                nvf = 0
+            nvf = nad/ndp if(ndp != 0) else 0
             nvfRF = int(args.tnr) * nvf
 
         if (if_swap_sample):
@@ -125,21 +119,11 @@ def RunStdFilter(args):
             record.samples[1] = nrm
         if((recordLen >= int(args.min)) and (recordLen <= int(args.max)) and (recordHomLen <= int(args.mhl))):
             record.add_info('set', 'Pindel')
-            if(tvf > nvfRF):
+            if tvf > nvfRF or locus in hotspot:
                 if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                     vcf_writer.write_record(record)
                     vcf_writer.flush()
-                    txt_fh.write(
-                        args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" +
-                        str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
-            else:
-                if(locus in hotspot):
-                    if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
-                        vcf_writer.write_record(record)
-                        vcf_writer.flush()
-                        txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" +
-                                     str(record.POS) + "\t" + str(record.REF) + "\t" +
-                                     str(record.ALT[0]) + "\t" + "." + "\n")
+                    txt_fh.write( args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
     vcf_writer.close()
     txt_fh.close()
     # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it

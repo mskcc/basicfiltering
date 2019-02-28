@@ -59,7 +59,7 @@ def RunStdFilter(args):
     txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '.', 'String', 'Failure Reason from MuTect text File', 'muTect', 'v1.1.4')
-    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
+    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
 
@@ -97,17 +97,11 @@ def RunStdFilter(args):
         trd = int(row.loc['t_ref_count'])
         tad = int(row.loc['t_alt_count'])
         tdp = trd + tad
-        if(tdp != 0):
-            tvf = int(tad) / float(tdp)
-        else:
-            tvf = 0
+        tvf = int(tad)/float(tdp) if(tdp != 0) else 0
         nrd = int(row.loc['n_ref_count'])
         nad = int(row.loc['n_alt_count'])
         ndp = nrd + nad
-        if(ndp != 0):
-            nvf = int(nad) / float(ndp)
-        else:
-            nvf = 0
+        nvf = int(nad) / float(ndp) if(ndp != 0) else 0
         judgement = row.loc['judgement']  # Get REJECT or PASS
         failure_reason = row.loc['failure_reasons']  # Get Reject Reason
         nvfRF = int(args.tnr) * nvf
@@ -116,7 +110,6 @@ def RunStdFilter(args):
         key_for_tracking = str(chr) + ":" + str(pos) + ":" + str(ref_allele) + ":" + str(alt_allele)
         locus = str(chr) + ":" + str(pos)
         if(judgement == "KEEP"):
-
             if(key_for_tracking in keepDict):
                 print("MutectStdFilter:There is a repeat ", key_for_tracking)
             else:
@@ -133,21 +126,13 @@ def RunStdFilter(args):
                     continue
             if(tag_count != len(failure_tags)):
                 continue
-            if(tvf > nvfRF):
+            if tvf > nvfRF or locus in hotspot:
                 if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                     if(key_for_tracking in keepDict):
                         print("MutectStdFilter:There is a repeat ", key_for_tracking)
                     else:
                         keepDict[key_for_tracking] = failure_reason
                     txt_fh.write(args.tsampleName + "\t" + str(chr) + "\t" + str(pos) + "\t" + str(ref_allele) + "\t" + str(alt_allele) + "\t" + str(failure_reason) + "\n")
-            else:
-                if(locus in hotspot):
-                    if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
-                        if(key_for_tracking in keepDict):
-                            print("MutectStdFilter:There is a repeat ", key_for_tracking)
-                        else:
-                            keepDict[key_for_tracking] = failure_reason
-                        txt_fh.write(args.tsampleName + "\t" + str(chr) + "\t" + str(pos) + "\t" + str(ref_allele) + "\t" + str(alt_allele) + "\t" + str(failure_reason) + "\n")
     txt_fh.close()
 
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)

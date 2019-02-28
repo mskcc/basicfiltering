@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 '''
-@description : This tool helps to filter vardict version 1.4.6 vcf
+@description : Filter a VCF listing somatic events called by VarDict
 @created : 04/22/2016
-@updated : 03/26/2018
+@updated : 03/01/2019
 @author : Ronak H Shah, Cyriac Kandoth
 
 '''
@@ -16,13 +16,13 @@ logging.basicConfig(
 logger = logging.getLogger('filter_vardict')
 try:
     import vcf
-    from vcf.parser import _Info as VcfInfo, _Format as VcfFormat
+    from vcf.parser import _Info as VcfInfo, _Format as VcfFormat, _Filter as VcfFilter
 except ImportError:
     logger.fatal("filter_mutect: pyvcf is not installed")
     sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(prog='filter_vardict.py',description='Filter snps/indels from the output of vardict v1.4.6',usage='%(prog)s [options]')
+    parser = argparse.ArgumentParser(prog='filter_vardict.py',description='Filter a VCF listing somatic events called by VarDict',usage='%(prog)s [options]')
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",help="make lots of noise")
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf vardict file which needs to be filtered")
     parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
@@ -32,6 +32,8 @@ def main():
     parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5',help="Tumor-Normal variant fraction ratio threshold ")
     parser.add_argument("-vf", "--variantfraction", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant fraction threshold ")
     parser.add_argument("-mq", "--minqual", action="store", dest="mq", required=False, type=int, default=20, metavar='20',help="Minimum variant call quality")
+    parser.add_argument("-cm", "--cpxMinMQ", action="store", dest="cpxMinMQ", required=False, type=float, default=55, metavar='55',help="Minimum mean mapping qual for complex events")
+    parser.add_argument("-cn", "--cpxMaxNM", action="store", dest="cpxMaxNM", required=False, type=float, default=2, metavar='2',help="Maximum mean mismatches for complex events")
     parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hotspot.vcf',help="Input vcf file with hotspots that skip VAF ratio filter")
     parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output',help="Full Path to the output dir.")
 
@@ -50,9 +52,11 @@ def RunStdFilter(args):
     txt_out = vcf_out + "_STDfilter.txt"
     vcf_out = vcf_out + "_STDfilter.vcf"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
-    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.1')
+    vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
+    vcf_reader.filters['nm2'] = VcfFilter('nm2', 'Complex event with a mean number of mismatches >2 in tumor BAM')
+    vcf_reader.filters['mq55'] = VcfFilter('mq55', 'Complex event with a mean mapping quality <55 in tumor BAM')
 
     allsamples = list(vcf_reader.samples)
     if(len(allsamples) != 2):
@@ -61,9 +65,9 @@ def RunStdFilter(args):
         sys.exit(1)
 
     # If the caller reported the normal genotype column before the tumor, swap those around
-    if_swap_sample = False
+    swap_sample_cols = False
     if(allsamples[1] == args.tsampleName):
-        if_swap_sample = True
+        swap_sample_cols = True
         vcf_reader.samples[0] = allsamples[1]
         vcf_reader.samples[1] = allsamples[0]
     nsampleName = vcf_reader.samples[1]
@@ -81,40 +85,19 @@ def RunStdFilter(args):
     for record in vcf_reader:
         tcall = record.genotype(args.tsampleName)
         somaticStatus = True if "Somatic" in record.INFO['STATUS'] else False
-        if(tcall['QUAL'] is not None):
-            tmq = int(tcall['QUAL'])
-        else:
-            tmq = 0
-        if(tcall['DP'] is not None):
-            tdp = int(tcall['DP'])
-        else:
-            tdp = 0
-        if(tcall['VD'] is not None):
-            tad = int(tcall['VD'])
-        else:
-            tad = 0
-        if(tdp != 0):
-            tvf = int(tad) / float(tdp)
-        else:
-            tvf = 0
+        tql = int(tcall['QUAL']) if(tcall['QUAL'] is not None) else 0
+        tdp = int(tcall['DP']) if(tcall['DP'] is not None) else 0
+        tad = int(tcall['VD']) if(tcall['VD'] is not None) else 0
+        tnm = float(tcall['NM']) if(tcall['NM'] is not None) else 0
+        tmq = float(tcall['MQ']) if(tcall['MQ'] is not None) else 0
+        tvf = int(tad)/float(tdp) if(tdp != 0) else 0
+
         ncall = record.genotype(nsampleName)
         if(ncall):
-            if(ncall['QUAL'] is not None):
-                nmq = int(ncall['QUAL'])
-            else:
-                nmq = 0
-            if(ncall['DP'] is not None):
-                ndp = int(ncall['DP'])
-            else:
-                ndp = 0
-            if(ncall['VD'] is not None):
-                nad = int(ncall['VD'])
-            else:
-                nad = 0
-            if(ndp != 0):
-                nvf = nad / ndp
-            else:
-                nvf = 0
+            nql = int(ncall['QUAL']) if(ncall['QUAL'] is not None) else 0
+            ndp = int(ncall['DP']) if(ncall['DP'] is not None) else 0
+            nad = int(ncall['VD']) if(ncall['VD'] is not None) else 0
+            nvf = nad/ndp if(ndp != 0) else 0
             nvfRF = int(args.tnr) * nvf
         else:
             logger.critical("filter_vardict: There are no genotype values for Normal. We will exit.")
@@ -122,22 +105,15 @@ def RunStdFilter(args):
         locus = str(record.CHROM) + ":" + str(record.POS)
         record.add_info('set', 'VarDict')
 
-        if (if_swap_sample):
+        if swap_sample_cols:
             nrm = record.samples[0]
             tum = record.samples[1]
             record.samples[0] = tum
             record.samples[1] = nrm
-        if(tvf > nvfRF):
-            if(somaticStatus & (tmq >= int(args.mq)) & (nmq >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
+        if tvf > nvfRF or locus in hotspot:
+            if(somaticStatus & (tql >= int(args.mq)) & (nql >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
                 vcf_writer.write_record(record)
-                txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) +
-                    "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
-        else:
-            if(locus in hotspot):
-                if(somaticStatus & (tmq >= int(args.mq)) & (nmq >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
-                    vcf_writer.write_record(record)
-                    txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) +
-                        "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
+                txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
     vcf_writer.close()
     txt_fh.close()
     # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it
