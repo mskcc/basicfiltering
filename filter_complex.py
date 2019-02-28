@@ -13,11 +13,6 @@ from pysam import VariantFile
 
 def main():
 
-    # some parameters specific to VarDict output
-    str_cplx = "Complex"
-    str_dele = "Deletion"
-    str_isrt = "Insertion"
-
     parser = argparse.ArgumentParser(prog='filter_complex.py', description='Apply a complex event filter based on indels/soft-clipping noise', usage='%(prog)s [options]')
     parser.add_argument("-i", "--input-vcf", action="store", dest="vcffile", required=True, type=str, help="Input VCF file")
     parser.add_argument("-tb", "--tumor-bam", action="store", dest="tumorbam", required=True, type=str, help="Tumor bam file")
@@ -144,7 +139,8 @@ def main():
             idx_alt = tgenotype[1]
             alt = alts[idx_alt-1]
             len_alt = len(alt)
-        if type == str_cplx or type == str_isrt or type == str_dele or len_ref != len_alt:
+        # apply this filter on all complex events longer than 3bps, including substitutions
+        if ref[0] != alt[0] and (len_ref > 3 or len_alt > 3):
             pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
             pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf) / float(ndp)
             if pert_tnoise > tnoise or pert_nnoise > nnoise:
