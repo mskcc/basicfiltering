@@ -1,12 +1,20 @@
-dist: precise
+# Reference: https://docs.travis-ci.com/user/languages/python/
+
+dist: xenial
 sudo: false
 language: python
+python: "2.7"
 
-python:
-  - "2.7"
+branches:
+  only:
+    - master
 
-install:
-  - "apt-get install bcftools tabix"
-  - "pip install -r requirements.txt"
+addons:
+  apt:
+    packages:
+    - bcftools
+    - tabix
+
+install: pip install -r requirements.txt
 
 script: nosetests -v tests
