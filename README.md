@@ -2,38 +2,29 @@
 
 Basic false-positive filters for VCFs/TXTs from somatic variant callers:
 
-1. Tumor Total Depth >= 5 (default)
-2. Tumor Variant Reads >= 3 (default)
-3. Tumor Variant Allele Fraction >= 1% (default)
-4. Tumor-Normal Variant Allele Fraction (VAF) Ratio >= 5 (default)
-5. If known somatic hotspots are provided, the VAF ratio filter above will be skipped for hotspots
+1. Tumor Total Depth >= 5
+2. Tumor Variant Reads >= 3
+3. Tumor Variant Allele Fraction (VAF) >= 1%
+4. For non-hotspot loci, ratio of Tumor:Normal VAFs >= 5
 
 [![Build Status](https://travis-ci.org/mskcc/basicfiltering.svg?branch=master)](https://travis-ci.org/mskcc/basicfiltering)
 
-## Requirements:
-- pyvcf : [v0.6.8](http://pyvcf.readthedocs.io/en/latest/INTRO.html)
-- pandas : [v0.19.2](http://pandas.pydata.org/)
-- nose : [v1.3.7](http://nose.readthedocs.io/en/latest/)
+### Quick Start 
 
-## Auto CWL post-process requirements
-- Convert inputVcf to have both string and file as input type
-- Convert inputTxt to have both string and file as input type
-- Convert hotspotVcf to have both string and file as input type
+```bash
+# Download and unpack the latest release from GitHub
+export GITHUB_URL=`curl -sL https://api.github.com/repos/mskcc/basicfiltering/releases | grep -m1 tarball_url | cut -d\" -f4`
+curl -L -o mskcc-basicfiltering.tar.gz $GITHUB_URL; tar -zxf mskcc-basicfiltering.tar.gz; cd mskcc-basicfiltering-*
 
-### Works with following versions output formats:
+# Set an environment variable that the cmo package needs
+export CMO_RESOURCE_CONFIG=`pwd`/data/cmo_resources.json
 
-#### MuTect (filter\_mutect.py)
-- [MuTect version](https://github.com/broadinstitute/mutect/tree/1.1.4) = 1.1.4
-- Takes in the text and vcf file input and filters based on text input
+# Install dependencies including the mskcc/cmo package needed here
+pip install -r requirements.txt
 
-#### PINDEL (filter\_pindel.py)
-- [PINDEL version](https://github.com/genome/pindel/tree/v0.2.5a7) = 0.2.5a7
-- Takes in a vcf and filters based on it
-
-#### SomaticIndelDetector (filter\_sid.py)
-- [SomaticIndelDetector in GATK  version](https://software.broadinstitute.org/gatk/download/) = 2.3-9
-- Takes in the text and vcf file input and filters based on text input
-
-#### VarDict (filter\_vardict.py)
-- [VarDict version](https://github.com/AstraZeneca-NGS/VarDictJava/tree/v1.4.6) = 1.4.6
-- Takes in a vcf and filters based on it
+# Read the documentation - each script will need a reference fasta
+python filter_vardict.py --help
+python filter_mutect.py --help
+python filter_pindel.py --help
+python filter_complex.py --help
+```

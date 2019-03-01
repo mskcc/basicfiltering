@@ -1,0 +1,39 @@
+{
+    "programs": {
+        "samtools": {
+            "default": "samtools"
+        },
+        "bcftools": {
+            "default": "bcftools"
+        },
+        "tabix": {
+            "default": "tabix"
+        },
+        "bgzip": {
+            "default": "bgzip"
+        },
+        "bedtools": {
+            "default": "bedtools"
+        }
+    },
+
+    "genomes": {
+        "GRCh37": {
+            "fasta":"data/Homo_sapiens.GRCh37.dna.chromosome.21.fa.gz"
+        }
+    },
+
+    "chr1_fingerprints": {
+    },
+
+    "keys": {
+    },
+
+    "targets": {
+    },
+
+    "config": {
+        "gdc": {
+        }
+    }
+}
