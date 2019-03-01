@@ -12,7 +12,6 @@ branches:
 addons:
   apt:
     packages:
-    - samtools
     - bcftools
     - tabix
     - bedtools
@@ -21,7 +20,6 @@ before_install:
   - rsync rsync://ftp.ensembl.org/ensembl/pub/grch37/current/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.dna.chromosome.21.fa.gz data/
   - gzip -d data/Homo_sapiens.GRCh37.dna.chromosome.21.fa.gz
   - bgzip data/Homo_sapiens.GRCh37.dna.chromosome.21.fa
-  - samtools faidx data/Homo_sapiens.GRCh37.dna.chromosome.21.fa.gz
 
 env:
   - CMO_RESOURCE_CONFIG=${TRAVIS_BUILD_DIR}/data/cmo_resources.json
