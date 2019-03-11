@@ -7,7 +7,7 @@ Basic false-positive filters for VCFs/TXTs from somatic variant callers:
 3. Tumor Variant Allele Fraction (VAF) >= 1%
 4. For non-hotspot loci, ratio of Tumor:Normal VAFs >= 5
 
-[![Build Status](https://travis-ci.org/mskcc/basicfiltering.svg?branch=master)](https://travis-ci.org/mskcc/basicfiltering)
+[![Build Status](https://travis-ci.com/mskcc/basicfiltering.svg?branch=master)](https://travis-ci.com/mskcc/basicfiltering)
 
 ### Quick Start 
 
