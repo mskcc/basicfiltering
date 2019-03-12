@@ -2,7 +2,7 @@
 '''
 @description : Filter a VCF listing somatic events called by VarDict
 @created : 04/22/2016
-@updated : 03/01/2019
+@updated : 03/11/2019
 @author : Ronak H Shah, Cyriac Kandoth
 
 '''
@@ -38,35 +38,36 @@ def main():
     parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output',help="Full Path to the output dir.")
 
     args = parser.parse_args()
-    if(args.verbose):
+    if args.verbose:
         logger.info("Started the run for doing standard filter.")
-    (stdfilterVCF) = RunStdFilter(args)
-    if(args.verbose):
+    RunStdFilter(args)
+    if args.verbose:
         logger.info("Finished the run for doing standard filter.")
 
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]
-    if(args.outdir):
+    if args.outdir:
         vcf_out = os.path.join(args.outdir,vcf_out)
     txt_out = vcf_out + "_STDfilter.txt"
     vcf_out = vcf_out + "_STDfilter.vcf"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
+    vcf_reader.infos['VSB'] = VcfInfo('VSB', '0', 'Flag', 'Non-hotspot with strand-bias (VD>10 and ALD lists 0) in tumor data, unless all REF/ALT reads have strand-bias at MQ>40', 'mskcc/basicfiltering', 'v0.2.2')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
-    vcf_reader.filters['nm2'] = VcfFilter('nm2', 'Complex event with a mean number of mismatches >2 in tumor BAM')
-    vcf_reader.filters['mq55'] = VcfFilter('mq55', 'Complex event with a mean mapping quality <55 in tumor BAM')
+    vcf_reader.filters['nm2'] = VcfFilter('nm2', 'Non-hotspot non-SNV with a mean number of mismatches >2 in tumor BAM')
+    vcf_reader.filters['mq55'] = VcfFilter('mq55', 'Non-hotspot non-SNV with a mean mapping quality <55 in tumor BAM')
 
     allsamples = list(vcf_reader.samples)
-    if(len(allsamples) != 2):
-        if(args.verbose):
+    if len(allsamples) != 2:
+        if args.verbose:
             logger.critical("The VCF does not have two genotype columns. Please input a proper vcf with Tumor/Normal columns")
         sys.exit(1)
 
     # If the caller reported the normal genotype column before the tumor, swap those around
     swap_sample_cols = False
-    if(allsamples[1] == args.tsampleName):
+    if allsamples[1] == args.tsampleName:
         swap_sample_cols = True
         vcf_reader.samples[0] = allsamples[1]
         vcf_reader.samples[1] = allsamples[0]
@@ -74,7 +75,7 @@ def RunStdFilter(args):
 
     # If provided, load hotspots into a dictionary for quick lookup
     hotspot = {}
-    if(args.hotspotVcf):
+    if args.hotspotVcf:
         hvcf_reader = vcf.Reader(open(args.hotspotVcf, 'r'))
         for record in hvcf_reader:
             genomic_locus = str(record.CHROM) + ":" + str(record.POS)
@@ -91,9 +92,11 @@ def RunStdFilter(args):
         tnm = float(tcall['NM']) if(tcall['NM'] is not None) else 0
         tmq = float(tcall['MQ']) if(tcall['MQ'] is not None) else 0
         tvf = int(tad)/float(tdp) if(tdp != 0) else 0
+        if tcall['ALD'] and tcall['RD']:
+            tdp_fwdrev = [tcall['ALD'][0] + tcall['RD'][0], tcall['ALD'][1] + tcall['RD'][1]]
 
         ncall = record.genotype(nsampleName)
-        if(ncall):
+        if ncall:
             nql = int(ncall['QUAL']) if(ncall['QUAL'] is not None) else 0
             ndp = int(ncall['DP']) if(ncall['DP'] is not None) else 0
             nad = int(ncall['VD']) if(ncall['VD'] is not None) else 0
@@ -111,7 +114,16 @@ def RunStdFilter(args):
             record.samples[0] = tum
             record.samples[1] = nrm
         if tvf > nvfRF or locus in hotspot:
-            if(somaticStatus & (tql >= int(args.mq)) & (nql >= int(args.mq)) & (tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
+            if somaticStatus and tql >= int(args.mq) and nql >= int(args.mq) and tdp >= int(args.dp) and tad >= int(args.ad) and tvf >= float(args.vf):
+                # Add some FILTER and INFO tags to events that pass the basic filters
+                if locus not in hotspot and record.INFO['TYPE'] != "SNV":
+                    if tnm > args.cpxMaxNM:
+                        record.add_filter('nm2')
+                    if tmq < args.cpxMinMQ:
+                        record.add_filter('mq55')
+                # Non-hotspot with strand-bias (VD>10 and ALD lists 0) in tumor data, unless all REF/ALT reads have strand-bias at MQ>40
+                if locus not in hotspot and tad > 10 and 0 in tcall['ALD'] and not (0 in tdp_fwdrev and tmq > 40):
+                    record.add_info('VSB')
                 vcf_writer.write_record(record)
                 txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
     vcf_writer.close()
@@ -119,7 +131,7 @@ def RunStdFilter(args):
     # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it
     norm_gz_vcf = cmo.util.normalize_vcf(vcf_out, args.refFasta)
     cmo.util.tabix_file(norm_gz_vcf)
-    return(norm_gz_vcf)
+    return norm_gz_vcf
 
 if __name__ == "__main__":
     start_time = time.time()

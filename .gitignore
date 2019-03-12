@@ -46,7 +46,7 @@ coverage.xml
 .hypothesis/
 
 # Temporary reference FASTA downloaded for tests
-data/Homo_sapiens.GRCh37.*
+data/Homo_sapiens.GRCh*
 
 # Translations
 *.mo

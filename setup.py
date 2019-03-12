@@ -10,7 +10,7 @@ with open('LICENSE') as f:
 
 setup(
     name='basicfiltering',
-    version='0.2.0',
+    version='0.2.2',
     description='Basic false-positive filters for VCFs/TXTs from somatic variant callers',
     long_description=readme,
     author='Ronak Shah, Cyriac Kandoth',
