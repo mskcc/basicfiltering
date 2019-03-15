@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 '''
-@description : This tool helps to filter pindel v0.2.5a7 vcf
+@description : This tool helps to filter a pindel vcf
 @created : 07/17/2016
-@updated : 08/03/2018
 @author : Ronak H Shah, Cyriac Kandoth, Zuojian Tang
 
 '''
+
 from __future__ import division
 import argparse, sys, os, time, logging, cmo
 
@@ -22,9 +22,9 @@ except ImportError:
     sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(prog='filter_pindel.py',description='Filter indels from the output of pindel v0.2.5a7',usage='%(prog)s [options]')
+    parser = argparse.ArgumentParser(prog='filter_pindel.py',description='Filter indels from the output of pindel',usage='%(prog)s [options]')
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose",help="make lots of noise")
-    parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf freebayes file which needs to be filtered")
+    parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf file which needs to be filtered")
     parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
     parser.add_argument("-rf", "--refFasta", action="store", dest="refFasta", required=True, type=str, metavar='ref.fa', help="Reference genome in fasta format")
     parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5',help="Tumor total depth threshold")
@@ -40,7 +40,7 @@ def main():
     args = parser.parse_args()
     if(args.verbose):
         logger.info("Started the run for doing standard filter.")
-    (stdfilterVCF) = RunStdFilter(args)
+    RunStdFilter(args)
     if(args.verbose):
         logger.info("Finished the run for doing standard filter.")
 

@@ -2,10 +2,10 @@
 '''
 @description : Filter a VCF listing somatic events called by VarDict
 @created : 04/22/2016
-@updated : 03/11/2019
 @author : Ronak H Shah, Cyriac Kandoth
 
 '''
+
 from __future__ import division
 import argparse, sys, os, time, logging, cmo
 
@@ -27,11 +27,11 @@ def main():
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf',help="Input vcf vardict file which needs to be filtered")
     parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName',help="Name of the tumor Sample")
     parser.add_argument("-rf", "--refFasta", action="store", dest="refFasta", required=True, type=str, metavar='ref.fa', help="Reference genome in fasta format")
-    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5',help="Tumor total depth threshold")
-    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3',help="Tumor allele depth threshold")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="minDp", required=False, type=int, default=5, metavar='5',help="Tumor total depth threshold")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="minAd", required=False, type=int, default=3, metavar='3',help="Tumor allele depth threshold")
     parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5',help="Tumor-Normal variant fraction ratio threshold ")
-    parser.add_argument("-vf", "--variantfraction", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant fraction threshold ")
-    parser.add_argument("-mq", "--minqual", action="store", dest="mq", required=False, type=int, default=20, metavar='20',help="Minimum variant call quality")
+    parser.add_argument("-vf", "--variantfraction", action="store", dest="minVaf", required=False, type=float, default=0.01, metavar='0.01',help="Tumor variant fraction threshold ")
+    parser.add_argument("-mq", "--minqual", action="store", dest="minQual", required=False, type=int, default=20, metavar='20',help="Minimum variant call quality")
     parser.add_argument("-cm", "--cpxMinMQ", action="store", dest="cpxMinMQ", required=False, type=float, default=55, metavar='55',help="Minimum mean mapping qual for complex events")
     parser.add_argument("-cn", "--cpxMaxNM", action="store", dest="cpxMaxNM", required=False, type=float, default=2, metavar='2',help="Maximum mean mismatches for complex events")
     parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hotspot.vcf',help="Input vcf file with hotspots that skip VAF ratio filter")
@@ -56,8 +56,8 @@ def RunStdFilter(args):
     vcf_reader.infos['VSB'] = VcfInfo('VSB', '0', 'Flag', 'Non-hotspot with strand-bias (VD>10 and ALD lists 0) in tumor data, unless all REF/ALT reads have strand-bias at MQ>40', 'mskcc/basicfiltering', 'v0.2.2')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
-    vcf_reader.filters['nm2'] = VcfFilter('nm2', 'Non-hotspot non-SNV with a mean number of mismatches >2 in tumor BAM')
-    vcf_reader.filters['mq55'] = VcfFilter('mq55', 'Non-hotspot non-SNV with a mean mapping quality <55 in tumor BAM')
+    vcf_reader.filters['nm2'] = VcfFilter('nm2', 'Non-hotspot non-SNV with a mean number of mismatches >' + str(args.cpxMaxNM) + ' in tumor BAM')
+    vcf_reader.filters['mq55'] = VcfFilter('mq55', 'Non-hotspot non-SNV with a mean mapping quality <' + str(args.cpxMinMQ) + ' in tumor BAM')
 
     allsamples = list(vcf_reader.samples)
     if len(allsamples) != 2:
@@ -114,7 +114,7 @@ def RunStdFilter(args):
             record.samples[0] = tum
             record.samples[1] = nrm
         if tvf > nvfRF or locus in hotspot:
-            if somaticStatus and tql >= int(args.mq) and nql >= int(args.mq) and tdp >= int(args.dp) and tad >= int(args.ad) and tvf >= float(args.vf):
+            if somaticStatus and tql >= int(args.minQual) and nql >= int(args.minQual) and tdp >= int(args.minDp) and tad >= int(args.minAd) and tvf >= float(args.minVaf):
                 # Add some FILTER and INFO tags to events that pass the basic filters
                 if locus not in hotspot and record.INFO['TYPE'] != "SNV":
                     if tnm > args.cpxMaxNM:

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 '''
-@description : This tool helps to filter muTect v1.1.4 txt and vcf
+@description : This tool helps to filter muTect v1 txt and vcf
 @created : 07/17/2016
-@updated : 03/26/2018
 @author : Ronak H Shah, Cyriac Kandoth
 
 '''
+
 from __future__ import division
 import argparse, sys, os, time, logging, cmo
 
@@ -27,7 +27,7 @@ except ImportError:
     sys.exit(1)
 
 def main():
-    parser = argparse.ArgumentParser(prog='filter_mutect.py', description='Filter snps from the output of muTect v1.1.4', usage='%(prog)s [options]')
+    parser = argparse.ArgumentParser(prog='filter_mutect.py', description='Filter snps from the output of muTect v1', usage='%(prog)s [options]')
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", help="make lots of noise")
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf', help="Input vcf muTect file which needs to be filtered")
     parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=str, metavar='SomeID.txt', help="Input txt muTect file which needs to be filtered")
@@ -43,7 +43,7 @@ def main():
     args = parser.parse_args()
     if(args.verbose):
         logger.info("Started the run for doing standard filter.")
-    (stdfilterVCF) = RunStdFilter(args)
+    RunStdFilter(args)
     if(args.verbose):
         logger.info("Finished the run for doing standard filter.")
 
@@ -58,7 +58,7 @@ def RunStdFilter(args):
     vcf_out = vcf_out + "_STDfilter.vcf"
     txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
-    vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '.', 'String', 'Failure Reason from MuTect text File', 'muTect', 'v1.1.4')
+    vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '.', 'String', 'Failure Reason from MuTect text File', 'muTect', 'v1')
     vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')

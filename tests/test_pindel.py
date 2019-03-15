@@ -1,17 +1,14 @@
+#!/usr/bin/env python
 '''
-@Description : This tool helps to test PINDEL
+@Description : This tool helps to test Pindel
 @Created :  03/23/2017
-@Updated : 03/23/2017
 @author : Ronak H Shah
 
 '''
 
-import filecmp
-import os
+import filecmp, os, sys, shlex, nose, logging
 from subprocess import Popen
-import shlex
-import nose
-import logging
+sys.dont_write_bytecode = True
 
 def setup_module(): 
     this_dir, this_filename = os.path.split(__file__)
