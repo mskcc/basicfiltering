@@ -82,13 +82,15 @@ def main():
             ncall = vcf_in_row.samples[0]
         if tcall['DP'] is not None:
             tdp = tcall['DP']
-        if tcall['VD'] is not None:
+        if 'VD' in tcall and tcall['VD'] is not None:
             tvd = tcall['VD']
+        elif 'AD' in tcall and tcall['AD'] is not None:
+            tvd = tcall['AD'][1]
+        else:
+            print ("Error: Cannot find tumor variant depth (or ALT depth).")
+            sys.exit(1)
         if ncall['DP'] is not None:
             ndp = ncall['DP']
-        if ncall['VD'] is not None:
-            nvd = ncall['VD']
-        type = vcf_in_row.info["TYPE"]
         tcounter_reads_sf = 0
         ncounter_reads_sf = 0
         tcounter_reads_indels = 0
@@ -139,8 +141,8 @@ def main():
             idx_alt = tgenotype[1]
             alt = alts[idx_alt-1]
             len_alt = len(alt)
-        # apply this filter on all complex events longer than 3bps, including substitutions
-        if ref[0] != alt[0] and (len_ref > 3 or len_alt > 3):
+        # apply this filter on all events longer than 3bps, including substitutions
+        if len_ref > 3 or len_alt > 3:
             pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
             pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf) / float(ndp)
             if pert_tnoise > tnoise or pert_nnoise > nnoise:
