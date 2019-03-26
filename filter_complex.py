@@ -8,13 +8,14 @@
 '''
 from __future__ import division
 from __future__ import print_function
-import argparse, time, os, sys, logging, re, csv, glob, subprocess, pysam, inspect
+import argparse, time, os, sys, logging, re, csv, glob, subprocess, pysam, inspect, cmo
 from pysam import VariantFile
 
 def main():
 
     parser = argparse.ArgumentParser(prog='filter_complex.py', description='Apply a complex event filter based on indels/soft-clipping noise', usage='%(prog)s [options]')
     parser.add_argument("-i", "--input-vcf", action="store", dest="vcffile", required=True, type=str, help="Input VCF file")
+    parser.add_argument("-rf", "--refFasta", action="store", dest="refFasta", required=True, type=str, metavar='ref.fa', help="Reference genome in fasta format")
     parser.add_argument("-tb", "--tumor-bam", action="store", dest="tumorbam", required=True, type=str, help="Tumor bam file")
     parser.add_argument("-nb", "--normal-bam", action="store", dest="normalbam", required=True, type=str, help="Normal bam file")
     parser.add_argument('-t', '--tumor-id', action="store", dest="tumorname", required=True, type=str, help="Tumor sample ID")
@@ -34,6 +35,10 @@ def main():
     tnoise = args.tnoise
     nnoise = args.nnoise
 
+    # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it
+    norm_gz_vcf = cmo.util.normalize_vcf(vcf_in, args.refFasta)
+    cmo.util.tabix_file(norm_gz_vcf)
+
     # figure output vcf file
     vcf_out = args.output
     vcf_out_dir = os.path.abspath(vcf_out)
@@ -46,7 +51,7 @@ def main():
     nbam = pysam.AlignmentFile(n, "rb")
 
     # read vcf file
-    vcf_in_fr = VariantFile(vcf_in)
+    vcf_in_fr = VariantFile(norm_gz_vcf)
     vcf_in_fr.header.formats.add("IS", "2", "Integer", "(Number of reads with indels, number of reads with soft-clipping) [within the flanking region of event]")
     vcf_in_fr.header.filters.add("cpx", None, None, "Complex event in a region with indel/soft-clipping noise, potentially misalignments")
     vcf_out_fw = VariantFile(vcf_out, 'w', header=vcf_in_fr.header)
@@ -91,46 +96,6 @@ def main():
             sys.exit(1)
         if ncall['DP'] is not None:
             ndp = ncall['DP']
-        tcounter_reads_sf = 0
-        ncounter_reads_sf = 0
-        tcounter_reads_indels = 0
-        ncounter_reads_indels = 0
-        for tread in tbam.fetch(chr, lpos, rpos):
-            tifsrd = tread.is_secondary
-            if tifsrd:
-                continue
-            tifdup = tread.is_duplicate
-            if tifdup:
-                continue
-            tmqual = tread.mapping_quality
-            if tmqual < mqual:
-                continue
-            tcigstr = tread.cigarstring
-            if tcigstr is None:
-                continue
-            if 'I' in tcigstr or 'D' in tcigstr:
-                tcounter_reads_indels += 1
-            elif 'S' in tcigstr:
-                tcounter_reads_sf += 1
-        for nread in nbam.fetch(chr, lpos, rpos):
-            nifsrd = nread.is_secondary
-            if nifsrd:
-                continue
-            nifdup = nread.is_duplicate
-            if nifdup:
-                continue
-            nmqual = nread.mapping_quality
-            if nmqual < mqual:
-                continue
-            ncigstr = nread.cigarstring
-            if ncigstr is None:
-                continue
-            if 'I' in ncigstr or 'D' in ncigstr:
-                ncounter_reads_indels += 1
-            elif 'S' in ncigstr:
-                ncounter_reads_sf += 1
-        vcf_in_row.samples[tid_tmp]['IS'] = tcounter_reads_indels, tcounter_reads_sf
-        vcf_in_row.samples[nid_tmp]['IS'] = ncounter_reads_indels, ncounter_reads_sf
         len_ref = len(ref)
         len_alts = len(alts)
         alt = alts[0]
@@ -141,17 +106,58 @@ def main():
             idx_alt = tgenotype[1]
             alt = alts[idx_alt-1]
             len_alt = len(alt)
-        # apply this filter on all events longer than 3bps, including substitutions
         if len_ref > 3 or len_alt > 3:
-            pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
-            pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf) / float(ndp)
-            if pert_tnoise > tnoise or pert_nnoise > nnoise:
-                vcf_in_row.filter.add('cpx')
-                out_forR.append(
-                    str(chr) + "\t" + str(pos) + "\t" + "cpx" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
-            else:
-                out_forR.append(
-                    str(chr) + "\t" + str(pos) + "\t" + "PASS" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
+            tcounter_reads_sf = 0
+            ncounter_reads_sf = 0
+            tcounter_reads_indels = 0
+            ncounter_reads_indels = 0
+            for tread in tbam.fetch(chr, lpos, rpos):
+                tifsrd = tread.is_secondary
+                if tifsrd:
+                    continue
+                tifdup = tread.is_duplicate
+                if tifdup:
+                    continue
+                tmqual = tread.mapping_quality
+                if tmqual < mqual:
+                    continue
+                tcigstr = tread.cigarstring
+                if tcigstr is None:
+                    continue
+                if 'I' in tcigstr or 'D' in tcigstr:
+                    tcounter_reads_indels += 1
+                elif 'S' in tcigstr:
+                    tcounter_reads_sf += 1
+            for nread in nbam.fetch(chr, lpos, rpos):
+                nifsrd = nread.is_secondary
+                if nifsrd:
+                    continue
+                nifdup = nread.is_duplicate
+                if nifdup:
+                    continue
+                nmqual = nread.mapping_quality
+                if nmqual < mqual:
+                    continue
+                ncigstr = nread.cigarstring
+                if ncigstr is None:
+                    continue
+                if 'I' in ncigstr or 'D' in ncigstr:
+                    ncounter_reads_indels += 1
+                elif 'S' in ncigstr:
+                    ncounter_reads_sf += 1
+            vcf_in_row.samples[tid_tmp]['IS'] = tcounter_reads_indels, tcounter_reads_sf
+            vcf_in_row.samples[nid_tmp]['IS'] = ncounter_reads_indels, ncounter_reads_sf        
+            # apply this filter on all events longer than 3bps, including substitutions
+            if tdp != 0 and ndp != 0:
+                pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
+                pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf) / float(ndp)
+                if pert_tnoise > tnoise or pert_nnoise > nnoise:
+                    vcf_in_row.filter.add('cpx')
+                    out_forR.append(
+                        str(chr) + "\t" + str(pos) + "\t" + "cpx" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
+                else:
+                    out_forR.append(
+                        str(chr) + "\t" + str(pos) + "\t" + "PASS" + "\t" + str(pert_tnoise) + "\t" + str(pert_nnoise))
         vcf_out_fw.write(vcf_in_row)
     tbam.close()
     nbam.close()
