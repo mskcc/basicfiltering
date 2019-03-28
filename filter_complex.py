@@ -175,7 +175,7 @@ def main():
     outcpxrdir = os.path.dirname(os.path.realpath(vcf_out_forR))
     writeCPXRScript(outcpxrdir, vcf_out_forR, outr)
     cmd = ["Rscript", outr]
-    execute_shell(cmd)
+    # execute_shell(cmd)
 
 
 def writeCPXRScript(indir, inf, outf):
