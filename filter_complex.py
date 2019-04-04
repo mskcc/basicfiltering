@@ -35,9 +35,12 @@ def main():
     tnoise = args.tnoise
     nnoise = args.nnoise
 
-    # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it
-    norm_gz_vcf = cmo.util.normalize_vcf(vcf_in, args.refFasta)
-    cmo.util.tabix_file(norm_gz_vcf)
+    # Compress input VCF file using bgzip, then index compressed VCF file using tabix
+    gz_vcf = vcf_in + ".gz"
+    cmd_bgzip = ["bgzip", "-c", vcf_in, ">", gz_vcf]
+    execute_shell(cmd_bgzip)
+    cmd_tabix = ["tabix", "-p", "vcf", gz_vcf]
+    execute_shell(cmd_tabix)
 
     # figure output vcf file
     vcf_out = args.output
@@ -51,7 +54,7 @@ def main():
     nbam = pysam.AlignmentFile(n, "rb")
 
     # read vcf file
-    vcf_in_fr = VariantFile(norm_gz_vcf)
+    vcf_in_fr = VariantFile(gz_vcf)
     vcf_in_fr.header.formats.add("IS", "2", "Integer", "(Number of reads with indels, number of reads with soft-clipping) [within the flanking region of event]")
     vcf_in_fr.header.filters.add("cpx", None, None, "Complex event in a region with indel/soft-clipping noise, potentially misalignments")
     vcf_out_fw = VariantFile(vcf_out, 'w', header=vcf_in_fr.header)
