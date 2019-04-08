@@ -122,7 +122,7 @@ def RunStdFilter(args):
                     if tmq < args.cpxMinMQ:
                         record.add_filter('mq55')
                 # Non-hotspot with strand-bias (VD>10 and ALD lists 0) in tumor data, unless all REF/ALT reads have strand-bias at MQ>40
-                if locus not in hotspot and tad > 10 and 0 in tcall['ALD'] and not (0 in tdp_fwdrev and tmq > 40):
+                if locus not in hotspot and tad >= 10 and 0 in tcall['ALD'] and not (0 in tdp_fwdrev and tmq > 40):
                     record.add_info('VSB')
                 vcf_writer.write_record(record)
                 txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
