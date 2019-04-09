@@ -100,6 +100,7 @@ def main():
             idx_alt = tgenotype[1]
             alt = alts[idx_alt-1]
             len_alt = len(alt)
+        # apply this filter on all events longer than 3bps, including substitutions
         if len_ref > 3 or len_alt > 3:
             tcounter_reads_sf = 0
             ncounter_reads_sf = 0
@@ -140,8 +141,7 @@ def main():
                 elif 'S' in ncigstr:
                     ncounter_reads_sf += 1
             vcf_in_row.samples[tid_tmp]['IS'] = tcounter_reads_indels, tcounter_reads_sf
-            vcf_in_row.samples[nid_tmp]['IS'] = ncounter_reads_indels, ncounter_reads_sf        
-            # apply this filter on all events longer than 3bps, including substitutions
+            vcf_in_row.samples[nid_tmp]['IS'] = ncounter_reads_indels, ncounter_reads_sf
             if tdp != 0 and ndp != 0:
                 pert_tnoise = float(tcounter_reads_indels + tcounter_reads_sf - tvd) / float(tdp)
                 pert_nnoise = float(ncounter_reads_indels + ncounter_reads_sf) / float(ndp)
@@ -189,21 +189,21 @@ def writeCPXRScript(indir, inf, outf):
         outcpx <- "%s"
         cpx <- read.delim(incpx, header=TRUE)
         pdf(file=outcpx, width=10, height=10)
-        ggplot(cpx, aes(x=T_Noise, y=N_Noise, color=TYPE)) + 
+        ggplot(cpx, aes(x=T_Noise, y=N_Noise, color=TYPE)) +
         geom_point() +
         labs(x="Tumor Noise",y="Normal Noise",title="Scatter plot for VarDict's Complex/Insertion/Deletion events") +
-        theme(plot.title=element_text(size=20,face="bold",vjust=4, hjust=0.5, margin=margin(t=10,b=20)), 
-            plot.margin=unit(c(2,2,2,3), "lines"), 
-            axis.title=element_text(size=18,face="bold",colour="black"), 
-            axis.text=element_text(size=14,face="bold",colour="black"), 
-            axis.text.x=element_text(hjust=1, margin=margin(t=20,r=0,b=0,l=0)), 
-            axis.text.y=element_text(margin=margin(t=0,r=20,b=0,l=0)), 
-            legend.position="bottom", 
-            legend.box="horizontal", 
-            legend.spacing=unit(1,"cm"), 
+        theme(plot.title=element_text(size=20,face="bold",vjust=4, hjust=0.5, margin=margin(t=10,b=20)),
+            plot.margin=unit(c(2,2,2,3), "lines"),
+            axis.title=element_text(size=18,face="bold",colour="black"),
+            axis.text=element_text(size=14,face="bold",colour="black"),
+            axis.text.x=element_text(hjust=1, margin=margin(t=20,r=0,b=0,l=0)),
+            axis.text.y=element_text(margin=margin(t=0,r=20,b=0,l=0)),
+            legend.position="bottom",
+            legend.box="horizontal",
+            legend.spacing=unit(1,"cm"),
             legend.text=element_text(size=14,face="bold",colour="black", margin=margin(r=50,unit="pt")),
             legend.title=element_text(size=14,face="bold",colour="black"),
-            legend.key.height=unit(2,"line"), 
+            legend.key.height=unit(2,"line"),
             legend.key.width=unit(2,"line"))
         dev.off()
         """
