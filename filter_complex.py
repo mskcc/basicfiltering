@@ -2,12 +2,10 @@
 '''
 @description : Given a VCF listing somatic events and a TN-pair of BAMs, apply a complex event filter based on indels/soft-clipping noise
 @created : 11/12/2018
-@updated : 02/28/2019
 @author : Zuojian Tang, Cyriac Kandoth
 
 '''
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 import argparse, time, os, sys, logging, re, csv, glob, subprocess, pysam, inspect, cmo
 from pysam import VariantFile
 
@@ -15,7 +13,6 @@ def main():
 
     parser = argparse.ArgumentParser(prog='filter_complex.py', description='Apply a complex event filter based on indels/soft-clipping noise', usage='%(prog)s [options]')
     parser.add_argument("-i", "--input-vcf", action="store", dest="vcffile", required=True, type=str, help="Input VCF file")
-    parser.add_argument("-rf", "--refFasta", action="store", dest="refFasta", required=True, type=str, metavar='ref.fa', help="Reference genome in fasta format")
     parser.add_argument("-tb", "--tumor-bam", action="store", dest="tumorbam", required=True, type=str, help="Tumor bam file")
     parser.add_argument("-nb", "--normal-bam", action="store", dest="normalbam", required=True, type=str, help="Normal bam file")
     parser.add_argument('-t', '--tumor-id', action="store", dest="tumorname", required=True, type=str, help="Tumor sample ID")
@@ -37,16 +34,11 @@ def main():
 
     # Compress input VCF file using bgzip, then index compressed VCF file using tabix
     gz_vcf = vcf_in + ".gz"
-    cmd_bgzip = ["bgzip", "-c", vcf_in, ">", gz_vcf]
-    execute_shell(cmd_bgzip)
-    cmd_tabix = ["tabix", "-p", "vcf", gz_vcf]
-    execute_shell(cmd_tabix)
+    execute_shell(["bgzip", "-c", vcf_in, ">", gz_vcf])
+    execute_shell(["tabix", "-p", "vcf", gz_vcf])
 
-    # figure output vcf file
+    # output files
     vcf_out = args.output
-    vcf_out_dir = os.path.abspath(vcf_out)
-    vcf_out_forR = vcf_out_dir + ".score.forR"
-    outr = vcf_out_forR + ".R"
     out_forR = []
 
     # read bam file
@@ -61,7 +53,6 @@ def main():
 
     allsamples = vcf_in_fr.header.samples
     if len(allsamples) == 2:
-        tid = allsamples[0]
         nid = allsamples[1]
     else:
         print("The VCF does not have two sample columns. Please input a proper vcf with Tumor/Normal columns")
@@ -167,18 +158,24 @@ def main():
     vcf_out_fw.close()
     vcf_in_fr.close()
 
+    # Cleanup files that we no longer need
+    os.remove(gz_vcf)
+    os.remove(gz_vcf + ".tbi")
+
     # write score results for R
-    with open(vcf_out_forR, 'w') as fvcfoutforR:
+    #vcf_out_dir = os.path.abspath(vcf_out)
+    #vcf_out_forR = vcf_out_dir + ".score.forR"
+    #outr = vcf_out_forR + ".R"
+    #with open(vcf_out_forR, 'w') as fvcfoutforR:
         # first print column names
-        fvcfoutforR.write("CHR" + "\t" + "POS" + "\t" + "TYPE" + "\t" + "T_Noise" + "\t" + "N_Noise" + "\n")
-        for tmp_item in out_forR:
-            fvcfoutforR.write(tmp_item + "\n")
+    #    fvcfoutforR.write("CHR" + "\t" + "POS" + "\t" + "TYPE" + "\t" + "T_Noise" + "\t" + "N_Noise" + "\n")
+    #    for tmp_item in out_forR:
+    #        fvcfoutforR.write(tmp_item + "\n")
 
     # write and run a R script to generate contamination plot in PDF format
-    outcpxrdir = os.path.dirname(os.path.realpath(vcf_out_forR))
-    writeCPXRScript(outcpxrdir, vcf_out_forR, outr)
-    cmd = ["Rscript", outr]
-    # execute_shell(cmd)
+    #outcpxrdir = os.path.dirname(os.path.realpath(vcf_out_forR))
+    #writeCPXRScript(outcpxrdir, vcf_out_forR, outr)
+    #execute_shell(["Rscript", outr])
 
 
 def writeCPXRScript(indir, inf, outf):
@@ -227,5 +224,5 @@ if __name__ == "__main__":
     main()
     end_time = time.time()
     totaltime = end_time - start_time
-    print(totaltime)
+    print("filter_complex: Elapsed time was %g seconds" % totaltime)
     sys.exit(0)
