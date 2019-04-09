@@ -7,7 +7,7 @@
 '''
 
 from __future__ import division
-import argparse, sys, os, time, logging, cmo
+import argparse, sys, os, time, logging, cmo, csv
 
 logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -19,11 +19,6 @@ try:
     from vcf.parser import _Info as VcfInfo, _Format as VcfFormat, _Filter as VcfFilter
 except ImportError:
     logger.fatal("filter_mutect: pyvcf is not installed")
-    sys.exit(1)
-try:
-    import pandas as pd
-except ImportError:
-    logger.fatal("filter_mutect: pandas is not installed")
     sys.exit(1)
 
 def main():
@@ -88,49 +83,50 @@ def RunStdFilter(args):
             genomic_locus = str(record.CHROM) + ":" + str(record.POS)
             hotspot[genomic_locus] = True
 
-    txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
-    for index, row in txtDF.iterrows():
-        chr = row.loc['contig']  # Get Chromosome
-        pos = row.loc['position']  # Get Position
-        ref_allele = row.loc['ref_allele']
-        alt_allele = row.loc['alt_allele']
-        trd = int(row.loc['t_ref_count'])
-        tad = int(row.loc['t_alt_count'])
-        tdp = trd + tad
-        tvf = int(tad)/float(tdp) if(tdp != 0) else 0
-        nrd = int(row.loc['n_ref_count'])
-        nad = int(row.loc['n_alt_count'])
-        ndp = nrd + nad
-        nvf = int(nad) / float(ndp) if(ndp != 0) else 0
-        judgement = row.loc['judgement']  # Get REJECT or PASS
-        failure_reason = row.loc['failure_reasons']  # Get Reject Reason
-        nvfRF = int(args.minTNR) * nvf
+    with open(args.inputTxt, 'rb') as infile:
+        reader = csv.DictReader((row for row in infile if not row.startswith('#')), delimiter='\t')
+        for row in reader:
+            chr = row['contig']  # Get Chromosome
+            pos = row['position']  # Get Position
+            ref_allele = row['ref_allele']
+            alt_allele = row['alt_allele']
+            trd = int(row['t_ref_count'])
+            tad = int(row['t_alt_count'])
+            tdp = trd + tad
+            tvf = int(tad)/float(tdp) if(tdp != 0) else 0
+            nrd = int(row['n_ref_count'])
+            nad = int(row['n_alt_count'])
+            ndp = nrd + nad
+            nvf = int(nad) / float(ndp) if(ndp != 0) else 0
+            judgement = row['judgement']  # Get REJECT or PASS
+            failure_reason = row['failure_reasons']  # Get Reject Reason
+            nvfRF = int(args.minTNR) * nvf
 
-        # This will help in filtering VCF
-        key_for_tracking = str(chr) + ":" + str(pos) + ":" + str(ref_allele) + ":" + str(alt_allele)
-        locus = str(chr) + ":" + str(pos)
-        if(judgement == "KEEP"):
-            if(key_for_tracking in keepDict):
-                print("MutectStdFilter:There is a repeat ", key_for_tracking)
-            else:
-                keepDict[key_for_tracking] = judgement
-        else:
-            rescued_tags = ["alt_allele_in_normal", "nearby_gap_events", "triallelic_site", "possible_contamination", "clustered_read_position"]
-            failure_tags = failure_reason.split(",")
-            tag_count = 0
-            for tag in failure_tags:
-                if tag in rescued_tags:
-                    tag_count = tag_count + 1
+            # This will help in filtering VCF
+            key_for_tracking = str(chr) + ":" + str(pos) + ":" + str(ref_allele) + ":" + str(alt_allele)
+            locus = str(chr) + ":" + str(pos)
+            if(judgement == "KEEP"):
+                if(key_for_tracking in keepDict):
+                    print("MutectStdFilter:There is a repeat ", key_for_tracking)
                 else:
-                    continue
-            if(tag_count != len(failure_tags)):
-                continue
-            if tvf > nvfRF or locus in hotspot:
-                if((tdp >= int(args.minDP)) & (tad >= int(args.minAD)) & (tvf >= float(args.minVAF))):
-                    if(key_for_tracking in keepDict):
-                        print("MutectStdFilter:There is a repeat ", key_for_tracking)
+                    keepDict[key_for_tracking] = judgement
+            else:
+                rescued_tags = ["alt_allele_in_normal", "nearby_gap_events", "triallelic_site", "possible_contamination", "clustered_read_position"]
+                failure_tags = failure_reason.split(",")
+                tag_count = 0
+                for tag in failure_tags:
+                    if tag in rescued_tags:
+                        tag_count = tag_count + 1
                     else:
-                        keepDict[key_for_tracking] = failure_reason
+                        continue
+                if(tag_count != len(failure_tags)):
+                    continue
+                if tvf > nvfRF or locus in hotspot:
+                    if((tdp >= int(args.minDP)) & (tad >= int(args.minAD)) & (tvf >= float(args.minVAF))):
+                        if(key_for_tracking in keepDict):
+                            print("MutectStdFilter:There is a repeat ", key_for_tracking)
+                        else:
+                            keepDict[key_for_tracking] = failure_reason
 
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     for record in vcf_reader:

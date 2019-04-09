@@ -17,6 +17,6 @@ setup(
     author_email='ckandoth@gmail.com',
     url='https://github.com/mskcc/basicfiltering',
     license=license,
-    install_requires=['nose==1.3.7', 'pyvcf==0.6.8', 'pandas==0.19.2'],
+    install_requires=['nose==1.3.7', 'pyvcf==0.6.8'],
     packages=find_packages(exclude=('tests', 'docs'))
 )
