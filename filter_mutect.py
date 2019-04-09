@@ -31,12 +31,12 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", help="make lots of noise")
     parser.add_argument("-ivcf", "--inputVcf", action="store", dest="inputVcf", required=True, type=str, metavar='SomeID.vcf', help="Input vcf muTect file which needs to be filtered")
     parser.add_argument("-itxt", "--inputTxt", action="store", dest="inputTxt", required=True, type=str, metavar='SomeID.txt', help="Input txt muTect file which needs to be filtered")
-    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tsampleName", required=True, type=str, metavar='SomeName', help="Name of the tumor Sample")
+    parser.add_argument("-tsn", "--tsampleName", action="store", dest="tName", required=True, type=str, metavar='SomeName', help="Name of the tumor sample")
     parser.add_argument("-rf", "--refFasta", action="store", dest="refFasta", required=True, type=str, metavar='ref.fa', help="Reference genome in fasta format")
-    parser.add_argument("-dp", "--totaldepth", action="store", dest="dp", required=False, type=int, default=5, metavar='5', help="Tumor total depth threshold")
-    parser.add_argument("-ad", "--alleledepth", action="store", dest="ad", required=False, type=int, default=3, metavar='3', help="Tumor allele depth threshold")
-    parser.add_argument("-tnr", "--tnRatio", action="store", dest="tnr", required=False, type=int, default=5, metavar='5', help="Tumor-Normal variant fraction ratio threshold ")
-    parser.add_argument("-vf", "--variantfraction", action="store", dest="vf", required=False, type=float, default=0.01, metavar='0.01', help="Tumor variant fraction threshold ")
+    parser.add_argument("-dp", "--totaldepth", action="store", dest="minDP", required=False, type=int, default=5, metavar='5', help="Minimum Tumor total depth")
+    parser.add_argument("-ad", "--alleledepth", action="store", dest="minAD", required=False, type=int, default=3, metavar='3', help="Minimum Tumor allele depth")
+    parser.add_argument("-tnr", "--tnRatio", action="store", dest="minTNR", required=False, type=int, default=5, metavar='5', help="Minimum Tumor-Normal variant allele fraction ratio")
+    parser.add_argument("-vf", "--variantfraction", action="store", dest="minVAF", required=False, type=float, default=0.01, metavar='0.01', help="Minimum Tumor variant allele fraction")
     parser.add_argument("-hvcf", "--hotspotVcf", action="store", dest="hotspotVcf", required=False, type=str, metavar='hotspot.vcf', help="Input vcf file with hotspots that skip VAF ratio filter")
     parser.add_argument("-o", "--outDir", action="store", dest="outdir", required=False, type=str, metavar='/somepath/output', help="Full Path to the output dir.")
 
@@ -50,13 +50,9 @@ def main():
 def RunStdFilter(args):
     vcf_out = os.path.basename(args.inputVcf)
     vcf_out = os.path.splitext(vcf_out)[0]
-    txt_out = os.path.basename(args.inputTxt)
-    txt_out = os.path.splitext(txt_out)[0]
     if(args.outdir):
         vcf_out = os.path.join(args.outdir,vcf_out)
-        txt_out = os.path.join(args.outdir,txt_out)
     vcf_out = vcf_out + "_STDfilter.vcf"
-    txt_out = txt_out + "_STDfilter.txt"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['FAILURE_REASON'] = VcfInfo('FAILURE_REASON', '.', 'String', 'Failure Reason from MuTect text File', 'muTect', 'v1')
     vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
@@ -71,7 +67,7 @@ def RunStdFilter(args):
 
     # If the caller reported the normal genotype column before the tumor, swap those around
     if_swap_sample = False
-    if(allsamples[1] == args.tsampleName):
+    if(allsamples[1] == args.tName):
         if_swap_sample = True
         vcf_reader.samples[0] = allsamples[1]
         vcf_reader.samples[1] = allsamples[0]
@@ -88,7 +84,6 @@ def RunStdFilter(args):
             hotspot[genomic_locus] = True
 
     txtDF = pd.read_table(args.inputTxt, skiprows=1, dtype=str)
-    txt_fh = open(txt_out, "wb")
     for index, row in txtDF.iterrows():
         chr = row.loc['contig']  # Get Chromosome
         pos = row.loc['position']  # Get Position
@@ -104,7 +99,7 @@ def RunStdFilter(args):
         nvf = int(nad) / float(ndp) if(ndp != 0) else 0
         judgement = row.loc['judgement']  # Get REJECT or PASS
         failure_reason = row.loc['failure_reasons']  # Get Reject Reason
-        nvfRF = int(args.tnr) * nvf
+        nvfRF = int(args.minTNR) * nvf
 
         # This will help in filtering VCF
         key_for_tracking = str(chr) + ":" + str(pos) + ":" + str(ref_allele) + ":" + str(alt_allele)
@@ -114,7 +109,6 @@ def RunStdFilter(args):
                 print("MutectStdFilter:There is a repeat ", key_for_tracking)
             else:
                 keepDict[key_for_tracking] = judgement
-                txt_fh.write(args.tsampleName + "\t" + str(chr) + "\t" + str(pos) + "\t" + str(ref_allele) + "\t" + str(alt_allele) + "\t" + str(judgement) + "\n")
         else:
             accepted_tags = ["alt_allele_in_normal", "nearby_gap_events", "triallelic_site", "possible_contamination", "clustered_read_position"]
             failure_tags = failure_reason.split(",")
@@ -127,13 +121,11 @@ def RunStdFilter(args):
             if(tag_count != len(failure_tags)):
                 continue
             if tvf > nvfRF or locus in hotspot:
-                if((tdp >= int(args.dp)) & (tad >= int(args.ad)) & (tvf >= float(args.vf))):
+                if((tdp >= int(args.minDP)) & (tad >= int(args.minAD)) & (tvf >= float(args.minVAF))):
                     if(key_for_tracking in keepDict):
                         print("MutectStdFilter:There is a repeat ", key_for_tracking)
                     else:
                         keepDict[key_for_tracking] = failure_reason
-                    txt_fh.write(args.tsampleName + "\t" + str(chr) + "\t" + str(pos) + "\t" + str(ref_allele) + "\t" + str(alt_allele) + "\t" + str(failure_reason) + "\n")
-    txt_fh.close()
 
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
     for record in vcf_reader:

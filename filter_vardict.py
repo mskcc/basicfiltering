@@ -49,7 +49,6 @@ def RunStdFilter(args):
     vcf_out = os.path.splitext(vcf_out)[0]
     if args.outdir:
         vcf_out = os.path.join(args.outdir,vcf_out)
-    txt_out = vcf_out + "_STDfilter.txt"
     vcf_out = vcf_out + "_STDfilter.vcf"
     vcf_reader = vcf.Reader(open(args.inputVcf, 'r'))
     vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
@@ -82,7 +81,6 @@ def RunStdFilter(args):
             hotspot[genomic_locus] = True
 
     vcf_writer = vcf.Writer(open(vcf_out, 'w'), vcf_reader)
-    txt_fh = open(txt_out, "wb")
     for record in vcf_reader:
         tcall = record.genotype(args.tsampleName)
         somaticStatus = True if "Somatic" in record.INFO['STATUS'] else False
@@ -125,9 +123,7 @@ def RunStdFilter(args):
                 if locus not in hotspot and tad >= 10 and 0 in tcall['ALD'] and not (0 in tdp_fwdrev and tmq > 40):
                     record.add_info('VSB')
                 vcf_writer.write_record(record)
-                txt_fh.write(args.tsampleName + "\t" + record.CHROM + "\t" + str(record.POS) + "\t" + str(record.REF) + "\t" + str(record.ALT[0]) + "\t" + "." + "\n")
     vcf_writer.close()
-    txt_fh.close()
     # Normalize the events in the VCF, produce a bgzipped VCF, then tabix index it
     norm_gz_vcf = cmo.util.normalize_vcf(vcf_out, args.refFasta)
     cmo.util.tabix_file(norm_gz_vcf)
