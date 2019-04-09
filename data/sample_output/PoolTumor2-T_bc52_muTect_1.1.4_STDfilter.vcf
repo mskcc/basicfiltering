@@ -17,6 +17,8 @@
 ##FORMAT=<ID=SS,Number=1,Type=Integer,Description="Variant status relative to non-adjacent Normal,0=wildtype,1=germline,2=somatic,3=LOH,4=post-transcriptional modification,5=unknown">
 ##FILTER=<ID=PASS,Description="Accept as a confident somatic mutation">
 ##FILTER=<ID=REJECT,Description="Rejected as a confident somatic mutation">
+##FILTER=<ID=f0.01,Description="Variant Allele Fraction (VAF) <0.01 in tumor BAM">
+##FILTER=<ID=tnr5,Description="Non-hotspot with ratio between Tumor-Normal VAFs <5">
 ##contig=<ID=21,length=48129895>
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	PoolTumor2-T	PoolNormal-N
 21	11021107	.	A	T	.	PASS	SOMATIC;VT=SNP;FAILURE_REASON=None;set=MuTect	GT:AD:BQ:DP:FA:SS	0/1:1989,130:31.0:2119:0.061:2	0:2036,0:.:2036:0.0:0

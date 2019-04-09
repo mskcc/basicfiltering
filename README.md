@@ -1,11 +1,14 @@
 # basicfiltering
 
-Basic false-positive filters for VCFs/TXTs from somatic variant callers:
+Basic false-positive filters with the following defaults for calls reported by MuTect and VarDict:
 
-1. Tumor Total Depth < 5
-2. Tumor Variant Reads < 3
-3. Tumor Variant Allele Fraction (VAF) < 1%
-4. For non-hotspot loci, ratio of Tumor:Normal VAFs < 5
+1. (Hard Filter) Tumor Total Depth < 5
+2. (Hard Filter) Tumor Variant Reads < 3
+3. (Hard Filter, VarDict only) Variant call quality < 20 in either tumor or normal
+4. (Soft Filter, `f0.01`) Tumor Variant Allele Fraction (VAF) < 1%
+5. (Soft Filter, `tnr5`) For non-hotspot loci, ratio of Tumor:Normal VAFs < 5
+6. (Soft Filter, `nm2`, VarDict only) Non-hotspot non-SNV with a mean number of mismatches > 2 in tumor
+7. (Soft Filter, `mq55`, VarDict only) Non-hotspot non-SNV with a mean mapping quality < 55 in tumor
 
 [![Build Status](https://travis-ci.com/mskcc/basicfiltering.svg?branch=master)](https://travis-ci.com/mskcc/basicfiltering)
 

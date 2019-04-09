@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger('filter_mutect')
 try:
     import vcf
-    from vcf.parser import _Info as VcfInfo, _Format as VcfFormat
+    from vcf.parser import _Info as VcfInfo, _Format as VcfFormat, _Filter as VcfFilter
 except ImportError:
     logger.fatal("filter_mutect: pyvcf is not installed")
     sys.exit(1)
@@ -58,6 +58,11 @@ def RunStdFilter(args):
     vcf_reader.infos['set'] = VcfInfo('set', '.', 'String', 'The variant callers that reported this event', 'mskcc/basicfiltering', 'v0.2.2')
     vcf_reader.formats['DP'] = VcfFormat('DP', '1', 'Integer', 'Total read depth at this site')
     vcf_reader.formats['AD'] = VcfFormat('AD', 'R', 'Integer', 'Allelic depths for the ref and alt alleles in the order listed')
+    # Set the soft filter tags we're going to be adding to the VCF
+    vaf_tag = 'f' + str(args.minVAF)
+    tnr_tag = 'tnr' + str(args.minTNR)
+    vcf_reader.filters[vaf_tag] = VcfFilter(vaf_tag, 'Variant Allele Fraction (VAF) <' + str(args.minVAF) + ' in tumor BAM')
+    vcf_reader.filters[tnr_tag] = VcfFilter(tnr_tag, 'Non-hotspot with ratio between Tumor-Normal VAFs <' + str(args.minTNR))
 
     allsamples = list(vcf_reader.samples)
     if(len(allsamples) != 2):
@@ -110,11 +115,11 @@ def RunStdFilter(args):
             else:
                 keepDict[key_for_tracking] = judgement
         else:
-            accepted_tags = ["alt_allele_in_normal", "nearby_gap_events", "triallelic_site", "possible_contamination", "clustered_read_position"]
+            rescued_tags = ["alt_allele_in_normal", "nearby_gap_events", "triallelic_site", "possible_contamination", "clustered_read_position"]
             failure_tags = failure_reason.split(",")
             tag_count = 0
             for tag in failure_tags:
-                if tag in accepted_tags:
+                if tag in rescued_tags:
                     tag_count = tag_count + 1
                 else:
                     continue
