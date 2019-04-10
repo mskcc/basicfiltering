@@ -2,7 +2,7 @@
 '''
 @description : This tool helps to filter muTect v1 txt and vcf
 @created : 07/17/2016
-@author : Ronak H Shah, Cyriac Kandoth
+@author : Ronak H Shah, Cyriac Kandoth, Zuojian Tang
 
 '''
 
@@ -58,6 +58,15 @@ def RunStdFilter(args):
     tnr_tag = 'tnr' + str(args.minTNR)
     vcf_reader.filters[vaf_tag] = VcfFilter(vaf_tag, 'Variant Allele Fraction (VAF) <' + str(args.minVAF) + ' in tumor BAM')
     vcf_reader.filters[tnr_tag] = VcfFilter(tnr_tag, 'Non-hotspot with ratio between Tumor-Normal VAFs <' + str(args.minTNR))
+    # Set hstdp, hsndp, hstad, hsvaf tags
+    hstdp_tag = 'hstdp'
+    hsndp_tag = 'hsndp'
+    hstad_tag = 'hstad'
+    hsvaf_tag = 'hsvaf'
+    vcf_reader.filters[hstdp_tag] = VcfFilter(hstdp_tag, 'Tumor depth <12 for hotspots, or <20 for non-hotspots')
+    vcf_reader.filters[hsndp_tag] = VcfFilter(hsndp_tag, 'Normal depth <6 for hotspots, or <10 for non-hotspots')
+    vcf_reader.filters[hstad_tag] = VcfFilter(hstad_tag, 'Tumor allele depth <3 for hotspots, or <5 for non-hotspots')
+    vcf_reader.filters[hsvaf_tag] = VcfFilter(hsvaf_tag, 'Variant allele fraction <0.02 for hotspots, or <0.05 for non-hotspots')
 
     allsamples = list(vcf_reader.samples)
     if len(allsamples) != 2:
@@ -122,6 +131,14 @@ def RunStdFilter(args):
                 record.add_filter(vaf_tag)
             if tvf < nvfRF and locus not in hotspot:
                 record.add_filter(tnr_tag)
+            if (tdp < 12 and locus in hotspot) or (tdp < 20 and locus not in hotspot):
+                record.add_filter(hstdp_tag)
+            if (ndp < 6 and locus in hotspot) or (ndp < 10 and locus not in hotspot):
+                record.add_filter(hsndp_tag)
+            if (tad < 3 and locus in hotspot) or (tad < 5 and locus not in hotspot):
+                record.add_filter(hstad_tag)
+            if (tvf < 0.02 and locus in hotspot) or (tvf < 0.05 and locus not in hotspot):
+                record.add_filter(hsvaf_tag)
             record.add_info('FAILURE_REASON', keepDict.get(key_for_tracking))
             vcf_writer.write_record(record)
     vcf_writer.close()
