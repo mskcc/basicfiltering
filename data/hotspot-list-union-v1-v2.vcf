@@ -1,7 +1,7 @@
 ##fileformat=VCFv4.2
 ##reference=ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
 ##readme="This VCF lists GRCh37 events where pathogenic somatic events are known to be recurrent, per three sources"
-##source="Hotspots from Chang et al. minus some likely false positives (doi:10.1038/nbt.3391)"
+##source="Hotspots from two Chang et al. papers minus some likely false positives (doi:10.1038/nbt.3391,doi:10.1158/2159-8290.CD-17-0321)"
 ##source="Blood-related mutations (clonal hematopoietic expansion) from Xie et al. (doi:10.1038/nm.3733)"
 ##source="Somatically mutable germline sites at MSH6:F1088, TP53:R290, TERT:E280, ASXL1:G645_G646"
 ##contig=<ID=1,length=249250621>
